@@ -1,0 +1,638 @@
+<!-- SFI Lärarvy v2 – 2026-04-26 -->
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SFI Quiz – Lärarvy</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: Arial, sans-serif;
+    background: #ffffff;
+    color: #000000;
+    min-height: 100vh;
+  }
+
+  .header {
+    background: #ffffff;
+    border-bottom: 2px solid #000000;
+    padding: 14px 24px;
+    display: flex;
+    align-items: stretch;
+    justify-content: space-between;
+    gap: 12px;
+  }
+
+  .header-left { display: flex; flex-direction: column; gap: 3px; }
+
+  .header-title {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #000000;
+  }
+
+  .header-sub {
+    font-size: 0.78rem;
+    color: #444;
+    font-style: italic;
+  }
+
+  .logout-btn {
+    background: #ffffff;
+    border: 2px solid #000000;
+    color: #000000;
+    padding: 7px 14px;
+    font-size: 0.78rem;
+    font-weight: 700;
+    cursor: pointer;
+    font-family: Arial, sans-serif;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    display: flex;
+    align-items: center;
+  }
+
+  .logout-btn:hover { background: #f0f0f0; }
+
+  .login-wrap {
+    max-width: 360px;
+    margin: 80px auto;
+    padding: 0 20px;
+  }
+
+  .login-card {
+    background: #ffffff;
+    border: 2px solid #000000;
+    padding: 28px 24px;
+  }
+
+  .login-title {
+    font-size: 1.2rem;
+    font-weight: 700;
+    margin-bottom: 4px;
+    color: #000;
+  }
+
+  .login-sub {
+    font-size: 0.82rem;
+    color: #444;
+    margin-bottom: 22px;
+    font-style: italic;
+  }
+
+  label {
+    display: block;
+    font-size: 0.76rem;
+    font-weight: 700;
+    color: #000000;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 6px;
+  }
+
+  input[type="password"], input[type="text"] {
+    width: 100%;
+    padding: 10px 12px;
+    font-size: 0.95rem;
+    font-family: Arial, sans-serif;
+    border: 2px solid #000000;
+    outline: none;
+    background: #ffffff;
+    color: #000000;
+    margin-bottom: 16px;
+  }
+
+  input:focus { border-width: 3px; }
+
+  .login-btn {
+    width: 100%;
+    padding: 11px;
+    background: #ffffff;
+    color: #000000;
+    border: 2px solid #000000;
+    font-size: 0.88rem;
+    font-weight: 700;
+    font-family: Arial, sans-serif;
+    cursor: pointer;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+
+  .login-btn:hover { background: #f0f0f0; }
+  .login-error { color: #ff0000; font-size: 0.82rem; margin-top: 10px; font-weight: 700; }
+
+  .main {
+    max-width: 1040px;
+    margin: 0 auto;
+    padding: 22px 20px 60px;
+  }
+
+  .stats-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 10px;
+    margin-bottom: 22px;
+  }
+
+  .stat-card {
+    background: #ffffff;
+    border: 2px solid #000000;
+    padding: 14px 16px;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100px;
+  }
+
+  .stat-value {
+    font-size: 2rem;
+    font-weight: 700;
+    color: #000000;
+    line-height: 1;
+    margin-bottom: 4px;
+  }
+
+  .stat-label {
+    font-size: 0.7rem;
+    color: #000000;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    font-weight: 700;
+  }
+
+  .filters {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 14px;
+    flex-wrap: wrap;
+    align-items: stretch;
+  }
+
+  .filter-label {
+    font-size: 0.78rem;
+    color: #000;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    display: flex;
+    align-items: center;
+  }
+
+  select {
+    padding: 7px 10px;
+    font-size: 0.85rem;
+    font-family: Arial, sans-serif;
+    border: 2px solid #000000;
+    background: #ffffff;
+    color: #000000;
+    outline: none;
+    cursor: pointer;
+    height: 38px;
+  }
+
+  .refresh-btn {
+    padding: 7px 14px;
+    background: #ffffff;
+    color: #000;
+    border: 2px solid #000;
+    font-size: 0.78rem;
+    font-weight: 700;
+    font-family: Arial, sans-serif;
+    cursor: pointer;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    margin-left: auto;
+    height: 38px;
+    display: flex;
+    align-items: center;
+  }
+
+  .refresh-btn:hover { background: #f0f0f0; }
+
+  .table-wrap {
+    background: #ffffff;
+    border: 2px solid #000000;
+    overflow: hidden;
+    overflow-x: auto;
+  }
+
+  table { width: 100%; border-collapse: collapse; font-size: 0.86rem; }
+
+  thead { background: #000000; }
+
+  th {
+    padding: 10px 14px;
+    text-align: left;
+    font-weight: 700;
+    font-size: 0.74rem;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    cursor: pointer;
+    user-select: none;
+    white-space: nowrap;
+    font-family: Arial, sans-serif;
+    color: #ffffff;
+  }
+
+  th:hover { background: #222222; }
+
+  td {
+    padding: 9px 14px;
+    border-bottom: 1px solid #e0e0e0;
+    color: #000000;
+    font-family: Arial, sans-serif;
+  }
+
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: #f5f5f5; }
+
+  .score-badge {
+    display: inline-block;
+    padding: 1px 8px;
+    font-weight: 700;
+    font-size: 0.78rem;
+    border: 1px solid #000;
+  }
+
+  .score-high { background: #e2efda; }
+  .score-mid { background: #fff2cc; }
+  .score-low { background: #ffe0e0; }
+
+  .empty-state {
+    text-align: center;
+    padding: 60px 20px;
+    color: #444;
+  }
+
+  .empty-state-icon { font-size: 2.5rem; margin-bottom: 12px; }
+  .empty-state-text { font-size: 0.9rem; }
+
+  .loading {
+    text-align: center;
+    padding: 40px;
+    color: #444;
+    font-size: 0.88rem;
+  }
+
+  .export-btn {
+    padding: 7px 14px;
+    background: white;
+    color: #000;
+    border: 2px solid #000;
+    font-size: 0.78rem;
+    font-weight: 700;
+    font-family: Arial, sans-serif;
+    cursor: pointer;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .export-btn:hover { background: #f0f0f0; }
+
+  .expand-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: #000;
+    text-decoration: underline;
+    font-family: Arial, sans-serif;
+    padding: 0;
+  }
+  .answers-row td {
+    padding: 0 !important;
+    border-bottom: 1px solid #e0e0e0;
+  }
+  .answers-detail {
+    padding: 10px 14px;
+    background: #fafafa;
+    font-size: 0.82rem;
+    display: none;
+  }
+  .answers-detail.open { display: block; }
+  .answer-item { padding: 4px 0; border-bottom: 1px solid #eee; display: flex; gap: 8px; flex-wrap: wrap; }
+  .answer-item:last-child { border-bottom: none; }
+  .answer-q { font-weight: 700; flex: 1; min-width: 200px; }
+  .answer-correct { color: #00b050; font-weight: 700; }
+  .answer-wrong { color: #ff0000; font-weight: 700; }
+
+  .hidden { display: none !important; }
+
+  @media (max-width: 600px) {
+    .header { padding: 10px 12px; flex-wrap: wrap; gap: 8px; }
+    .main { padding: 12px 10px 48px; }
+    th, td { padding: 8px 10px; font-size: 0.78rem; }
+    .stat-value { font-size: 1.6rem; }
+    .filters { gap: 6px; }
+    .refresh-btn { margin-left: 0; }
+  }
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="loginScreen">
+  <div class="login-wrap">
+    <div class="login-card">
+      <div class="login-title">Lärarvy</div>
+      <div class="login-sub">SFI Quiz – FlxKvGul</div>
+      <label for="pwInput">Lösenord</label>
+      <input type="password" id="pwInput" placeholder="Ange lösenord..." onkeydown="if(event.key==='Enter')login()">
+      <button class="login-btn" onclick="login()">Logga in</button>
+      <div class="login-error hidden" id="loginError">Fel lösenord. Försök igen.</div>
+    </div>
+  </div>
+</div>
+
+<!-- DASHBOARD -->
+<div id="dashboard" class="hidden">
+  <div class="header">
+    <div>
+      <div class="header-title">Lärarvy – Resultatöversikt</div>
+      <div class="header-sub">SFI Quiz · FlxKvGul</div>
+    </div>
+    <div style="display:flex;gap:10px;align-items:stretch">
+      <button class="export-btn" onclick="exportCSV()" style="height:38px">⬇ Exportera CSV</button>
+      <button class="logout-btn" onclick="logout()" style="height:38px">Logga ut</button>
+    </div>
+  </div>
+
+  <div class="main">
+    <!-- Stats -->
+    <div class="stats-row">
+      <div class="stat-card">
+        <div class="stat-value" id="statTotal">–</div>
+        <div class="stat-label">Inlämningar</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value" id="statStudents">–</div>
+        <div class="stat-label">Elever</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value" id="statAvg">–</div>
+        <div class="stat-label">Snittpoäng</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value" id="statQuizzes">–</div>
+        <div class="stat-label">Quiz</div>
+      </div>
+    </div>
+
+    <!-- Filters -->
+    <div class="filters">
+      <span class="filter-label">Filtrera:</span>
+      <select id="filterQuiz" onchange="applyFilters()">
+        <option value="">Alla quiz</option>
+      </select>
+      <select id="filterStudent" onchange="applyFilters()">
+        <option value="">Alla elever</option>
+      </select>
+      <button class="refresh-btn" onclick="loadResults()">↻ Uppdatera</button>
+    </div>
+
+    <!-- Table -->
+    <div class="table-wrap">
+      <div id="loadingMsg" class="loading">Laddar resultat...</div>
+      <table id="resultsTable" class="hidden">
+        <thead>
+          <tr>
+            <th onclick="sortBy('student_name')">Elev ↕</th>
+            <th onclick="sortBy('quiz_theme')">Quiz ↕</th>
+            <th onclick="sortBy('score')">Poäng ↕</th>
+            <th onclick="sortBy('pct')">% ↕</th>
+            <th onclick="sortBy('created_at')">Datum ↕</th>
+            <th>Svar</th>
+          </tr>
+        </thead>
+        <tbody id="resultsBody"></tbody>
+      </table>
+      <div id="emptyState" class="empty-state hidden">
+        <div class="empty-state-icon">📋</div>
+        <div class="empty-state-text">Inga resultat hittades.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const SUPABASE_URL = "https://dszfynsqxdgsakfckquo.supabase.co";
+const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRzemZ5bnNxeGRnc2FrZmNrcXVvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzcwNzQ1MDIsImV4cCI6MjA5MjY1MDUwMn0.fC90kH2Y9rqedmwbYB856JqC1-lvYWb1JJry4pGnMqg";
+const PASSWORD = "sfi2026"; // Change this to your preferred password
+
+let allResults = [];
+let sortCol = 'created_at';
+let sortAsc = false;
+
+// ── AUTH ──
+function login() {
+  const pw = document.getElementById('pwInput').value;
+  if (pw === PASSWORD) {
+    document.getElementById('loginScreen').classList.add('hidden');
+    document.getElementById('dashboard').classList.remove('hidden');
+    loadResults();
+  } else {
+    document.getElementById('loginError').classList.remove('hidden');
+  }
+}
+
+function logout() {
+  document.getElementById('dashboard').classList.add('hidden');
+  document.getElementById('loginScreen').classList.remove('hidden');
+  document.getElementById('pwInput').value = '';
+}
+
+// ── LOAD DATA ──
+async function loadResults() {
+  document.getElementById('loadingMsg').classList.remove('hidden');
+  document.getElementById('resultsTable').classList.add('hidden');
+  document.getElementById('emptyState').classList.add('hidden');
+
+  try {
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/quiz_results?select=*&order=created_at.desc`, {
+      headers: {
+        "apikey": SUPABASE_KEY,
+        "Authorization": `Bearer ${SUPABASE_KEY}`
+      }
+    });
+    allResults = await res.json();
+    populateFilters();
+    applyFilters();
+  } catch(e) {
+    document.getElementById('loadingMsg').textContent = 'Fel: kunde inte ladda resultat.';
+  }
+}
+
+// ── FILTERS ──
+function populateFilters() {
+  const quizSel = document.getElementById('filterQuiz');
+  const studentSel = document.getElementById('filterStudent');
+  const quizCurrent = quizSel.value;
+  const studentCurrent = studentSel.value;
+
+  const quizzes = [...new Set(allResults.map(r => r.quiz_theme))].sort();
+  const students = [...new Set(allResults.map(r => r.student_name))].sort();
+
+  quizSel.innerHTML = '<option value="">Alla quiz</option>' +
+    quizzes.map(q => `<option value="${q}" ${q===quizCurrent?'selected':''}>${q}</option>`).join('');
+  studentSel.innerHTML = '<option value="">Alla elever</option>' +
+    students.map(s => `<option value="${s}" ${s===studentCurrent?'selected':''}>${s}</option>`).join('');
+}
+
+function applyFilters() {
+  const qf = document.getElementById('filterQuiz').value;
+  const sf = document.getElementById('filterStudent').value;
+
+  let filtered = allResults.filter(r =>
+    (!qf || r.quiz_theme === qf) &&
+    (!sf || r.student_name === sf)
+  );
+
+  // Add pct field
+  filtered = filtered.map(r => ({ ...r, pct: r.total ? Math.round(r.score/r.total*100) : 0 }));
+
+  // Sort
+  filtered.sort((a, b) => {
+    let av = a[sortCol] ?? '';
+    let bv = b[sortCol] ?? '';
+    if (typeof av === 'string') av = av.toLowerCase();
+    if (typeof bv === 'string') bv = bv.toLowerCase();
+    return sortAsc ? (av > bv ? 1 : -1) : (av < bv ? 1 : -1);
+  });
+
+  renderTable(filtered);
+  updateStats(filtered);
+}
+
+function sortBy(col) {
+  if (sortCol === col) sortAsc = !sortAsc;
+  else { sortCol = col; sortAsc = true; }
+  applyFilters();
+}
+
+// ── RENDER ──
+function renderTable(rows) {
+  document.getElementById('loadingMsg').classList.add('hidden');
+
+  if (rows.length === 0) {
+    document.getElementById('resultsTable').classList.add('hidden');
+    document.getElementById('emptyState').classList.remove('hidden');
+    return;
+  }
+
+  document.getElementById('emptyState').classList.add('hidden');
+  document.getElementById('resultsTable').classList.remove('hidden');
+
+  const tbody = document.getElementById('resultsBody');
+  tbody.innerHTML = rows.map((r, idx) => {
+    const pct = r.total ? Math.round(r.score/r.total*100) : 0;
+    const badgeClass = pct >= 80 ? 'score-high' : pct >= 60 ? 'score-mid' : 'score-low';
+    const date = new Date(r.created_at).toLocaleDateString('sv-SE', { day:'numeric', month:'short', hour:'2-digit', minute:'2-digit' });
+    const rowId = `row_${idx}`;
+    const detail = buildAnswerDetail(r, rowId);
+    return `<tr>
+      <td><strong>${esc(r.student_name)}</strong></td>
+      <td>${esc(r.quiz_theme || r.quiz_id)}</td>
+      <td>${r.score} / ${r.total}</td>
+      <td><span class="score-badge ${badgeClass}">${pct}%</span></td>
+      <td style="color:#444">${date}</td>
+      <td><button class="expand-btn" onclick="toggleAnswers('${rowId}')">Visa svar</button></td>
+    </tr>
+    <tr class="answers-row"><td colspan="6"><div class="answers-detail" id="detail_${rowId}">${detail}</div></td></tr>`;
+  }).join('');
+}
+
+function updateStats(rows) {
+  document.getElementById('statTotal').textContent = rows.length;
+  document.getElementById('statStudents').textContent = new Set(rows.map(r => r.student_name)).size;
+  document.getElementById('statQuizzes').textContent = new Set(rows.map(r => r.quiz_id)).size;
+  const avg = rows.length ? Math.round(rows.reduce((s,r) => s + (r.total ? r.score/r.total*100 : 0), 0) / rows.length) : 0;
+  document.getElementById('statAvg').textContent = rows.length ? avg + '%' : '–';
+}
+
+// ── EXPORT ──
+function exportCSV() {
+  const qf = document.getElementById('filterQuiz').value;
+  const sf = document.getElementById('filterStudent').value;
+  let rows = allResults.filter(r => (!qf || r.quiz_theme === qf) && (!sf || r.student_name === sf));
+
+  const header = ['Elev','Quiz','Poäng','Total','%','Datum'];
+  const lines = rows.map(r => {
+    const pct = r.total ? Math.round(r.score/r.total*100) : 0;
+    const date = new Date(r.created_at).toLocaleDateString('sv-SE');
+    return [r.student_name, r.quiz_theme||r.quiz_id, r.score, r.total, pct+'%', date].join(',');
+  });
+
+  const csv = [header.join(','), ...lines].join('\n');
+  const blob = new Blob(['\uFEFF'+csv], { type:'text/csv;charset=utf-8;' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `sfi_quiz_resultat_${new Date().toISOString().slice(0,10)}.csv`;
+  a.click();
+}
+
+function esc(str) {
+  return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+// ── QUIZ DATA for answer details ──
+const QUIZ_DATA = {
+  "27-28-text": {questions:[{q:"Vad säger texten om ont i magen i en vecka?",options:["Det beror säkert på maten","Det är inte något att oroa sig för","Det är något annat än ont i magen en dag","Det går över av sig självt"],correct:2},{q:"Vad gör sjuksköterskan på 1177?",options:["Skriver ett recept åt patienten","Lyssnar och hjälper en att förstå hur allvarligt det är","Bokar tid på sjukhuset direkt","Skäller på en om man väntat för länge"],correct:1},{q:"Vad kan läkaren bestämma efter att ha undersökt en?",options:["Alltid ett recept och vila","Bara ett blodprov","Ett recept, vila och vatten, eller ett blodprov","Att man ska åka till sjukhuset"],correct:2},{q:"Vad menar texten med att kroppen och psyket hänger ihop?",options:["Att man alltid mår dåligt när man är stressad","Att oro och stress kan ge fysiska symptom som ont i magen","Att man inte ska lyssna på kroppen","Att psykiska problem inte är riktiga sjukdomar"],correct:1},{q:"Varför kan det vara svårare att söka hjälp i ett nytt land?",options:["För att vårdcentralen är stängd för utlänningar","För att man kanske inte kan språket eller vet hur systemet fungerar","För att 1177 bara finns på svenska","För att läkarna inte förstår utländska symptom"],correct:1}]},
+  "29-30-text": {questions:[{q:"Vad är friskvård enligt texten?",options:["Att gå till läkaren när man är sjuk","Att äta medicin varje dag","Vanor man har för att kroppen ska må bra","Att träna hårt på gym"],correct:2},{q:"Vad säger texten är det viktigaste med träning?",options:["Att ha bra kondition innan man börjar","Att röra på sig ofta, inte att träna hårt","Att simma eller cykla, inte promenera","Att styrketräna för att musklerna ska växa"],correct:1},{q:"Vad händer med immunförsvaret om man sover för lite?",options:["Det blir starkare av att kroppen jobbar mer","Det påverkas inte av sömn","Det försämras och man blir lättare sjuk","Det beror på vad man äter"],correct:2},{q:"Vad kan övervikt leda till enligt texten?",options:["Dålig kondition och svaga muskler","Högt blodtryck och högt blodsocker","Sömnproblem och trötthet","Beroende av socker och fett"],correct:1},{q:"Varför är det svårt att sluta röka?",options:["Det kostar för mycket pengar att sluta","Rökning är bra för avkopplingen","Rökning är ett beroende","Det finns ingen hjälp att få"],correct:2},{q:"Vad säger texten om avkoppling?",options:["Det är viktigare än sömn och kost","Man behöver avkoppling bara om man jobbar mycket","Stress är dåligt för kroppen och man behöver tid för saker man tycker om","En promenad räknas inte som avkoppling"],correct:2},{q:"Varför är det bra att göra regelbundna undersökningar?",options:["Läkaren kan då bestämma vilken träning man ska göra","Man kan hitta problem tidigt och det är lättare att behandla dem då","Det är ett krav i Sverige för alla vuxna","Det hjälper immunförsvaret att bli starkare"],correct:1}]},
+  "04-05-text": {questions:[{q:"Vad gör man först när man kommer till akuten?",options:["Man väntar på en läkare direkt","Man går till receptionen och får en nummerlapp","Man ringer och bokar en tid","Man går till väntrummet och sätter sig"],correct:1},{q:"Vem bestämmer vem som får hjälp först på akuten?",options:["Den som kom dit först","Receptionen","En sjuksköterska","Läkaren"],correct:2},{q:"Vilka symtom kräver snabb hjälp enligt texten?",options:["Lite hosta och ont i halsen","Svårt att andas och stark smärta","Illamående och yrsel","Feber och trötthet"],correct:1},{q:"Vad kan hända efter att läkaren har undersökt en?",options:["Man måste alltid stanna på sjukhuset","Man får alltid en spruta","Man kan få medicin, dropp eller behöva stanna","Man får alltid ett recept och går hem"],correct:2},{q:"Vad säger texten om att boka tid på akuten?",options:["Man måste boka tid minst en dag innan","Man kan ringa och boka samma dag","Man behöver inte boka tid men kan behöva vänta länge","Man bokar tid via 1177"],correct:2},{q:"Varför tar man ibland röntgen på akuten?",options:["Det är obligatoriskt för alla patienter","För att se om man har en infektion eller allergi","Det är en del av läkarens undersökning för att se vad som är fel","Man tar alltid röntgen innan man får medicin"],correct:2}]},
+  "06-07-text": {questions:[{q:"Vad betyder sjukskrivning enligt texten?",options:["Att man jobbar hemifrån istället","Att man stannar hemma och vilar tills man blir frisk","Att man tar medicin och fortsätter jobba","Att man ansöker om semester"],correct:1},{q:"När behövs ett sjukintyg?",options:["Redan från första dagen","Efter tre dagar","Om sjukskrivningen är längre än sju dagar","Bara om man är inlagd på sjukhus"],correct:2},{q:"Vem betalar sjuklön de första fjorton dagarna?",options:["Försäkringskassan","Vårdcentralen","Arbetsgivaren","Staten"],correct:2},{q:"Vad gör en handläggare på Försäkringskassan?",options:["Skriver sjukintyg åt läkaren","Undersöker patienten","Gör en bedömning och bestämmer om man får sjukpenning","Betalar ut sjuklön direkt"],correct:2},{q:"Vad kan hända om Försäkringskassan avslår ansökan?",options:["Man måste gå tillbaka till jobbet direkt","Man får ingen ersättning","Arbetsgivaren betalar istället","Man måste flytta till ett annat land"],correct:1},{q:"Hur återgår man till jobbet enligt texten?",options:["Man börjar alltid på heltid direkt","Man väntar tills läkaren säger till","Ibland börjar man på deltid först och sedan heltid","Man bestämmer själv när man vill börja"],correct:2}]},
+  "11-12-text": {questions:[{q:"Vad handlar fysioterapi om enligt texten?",options:["Att operera skadade muskler och leder","Att hjälpa kroppen att röra sig bättre och minska smärta","Att skriva ut medicin för smärta","Att vila kroppen tills den läker av sig själv"],correct:1},{q:"Vilka söker ofta fysioterapi enligt texten?",options:["Bara äldre personer med rörelseproblem","Personer som vill gå ner i vikt","Personer efter en skada eller operation","Bara idrottare med muskelproblem"],correct:2},{q:"Vad kan en behandling innehålla?",options:["Bara massage och avslappning","Träning, stretching, massage och avslappning","Bara styrketräning med skivstång","Operation och medicin"],correct:1},{q:"Vad lär man sig hos fysioterapeuten?",options:["Hur man lagar mat på ett hälsosamt sätt","Hur man sover bättre på natten","Hur man står, sitter och lyfter på rätt sätt","Hur man använder träningsmaskiner på gym"],correct:2},{q:"Varför är hållning och andning viktiga?",options:["Det gör träningen roligare","Det hjälper ryggen och förhindrar att smärtan kommer tillbaka","Det är krav från Försäkringskassan","Det ersätter all annan träning"],correct:1},{q:"Vad är syftet med uppföljning?",options:["Att skriva ett nytt sjukintyg","Att fysioterapeuten följer hur det går och justerar träningsprogrammet","Att patienten kan sluta träna hemma","Att bestämma om man behöver en operation"],correct:1}]},
+  "13-14-text": {questions:[{q:"Vad är målet med psykoterapi enligt texten?",options:["Att få medicin för ångest och depression","Att må bättre och förstå sig själv bättre","Att sluta träffa vänner och familj","Att lösa ekonomiska problem"],correct:1},{q:"Vad är KBT?",options:["En typ av gruppterapi för familjer","En metod som hjälper en att ändra negativa tankemönster och beteenden","Ett läkemedel mot ångest","En avslappningsmetod som används inom mindfulness"],correct:1},{q:"Vad är en fördel med gruppterapi enligt texten?",options:["Det är billigare än samtalsterapi","Man slipper prata om sina känslor","Man kan höra att man inte är ensam om sina problem","Man träffar terapeuten mer sällan"],correct:2},{q:"Vad betyder tystnadsplikt?",options:["Att man inte får prata under sessionerna","Att det man pratar om stannar hos terapeuten","Att terapeuten inte får föra journal","Att man måste betala extra för varje besök"],correct:1},{q:"Hur får man tillgång till psykoterapi i Sverige?",options:["Man bokar direkt hos en privat terapeut","Man ansöker via Försäkringskassan","Man kan få remiss via vårdcentralen","Man måste vänta på ett beslut från sjukhuset"],correct:2},{q:"Vad säger texten om att söka hjälp?",options:["Man ska vänta och se om det går över av sig självt","Det är viktigt att våga söka hjälp – många väntar för länge","Psykoterapi passar bara för allvarliga sjukdomar","Man behöver inte söka hjälp om man har bra vänner"],correct:1}]}
+};
+
+function toggleAnswers(rowId) {
+  const el = document.getElementById('detail_' + rowId);
+  if (el) el.classList.toggle('open');
+}
+
+function buildAnswerDetail(r, rowId) {
+  if (!r.answers || !Array.isArray(r.answers) || r.answers.length === 0) return '<em>Inga detaljerade svar sparade.</em>';
+  // New format: each answer is an object with question, selectedText, correctText, isCorrect
+  if (r.answers[0] && typeof r.answers[0] === 'object' && 'question' in r.answers[0]) {
+    return r.answers.map((a, i) => {
+      return `<div class="answer-item">
+        <span class="answer-q">${i+1}. ${esc(a.question)}</span>
+        ${a.isCorrect
+          ? `<span class="answer-correct">✓ ${esc(a.selectedText || '')}</span>`
+          : `<span class="answer-wrong">✗ ${esc(a.selectedText || '(inget svar)')}</span><span class="answer-correct">✓ ${esc(a.correctText || '')}</span>`}
+      </div>`;
+    }).join('');
+  }
+  // Old format fallback: index array, try QUIZ_DATA
+  const qdata = QUIZ_DATA[r.quiz_id];
+  if (!qdata) return '<em>Inga detaljerade svar sparade.</em>';
+  const letters = ['A','B','C','D'];
+  return qdata.questions.map((q, i) => {
+    const ua = r.answers[i];
+    const correct = q.correct;
+    const ok = ua === correct;
+    const uaText = ua !== null && ua !== undefined ? `${letters[ua]}) ${q.options[ua]}` : '(inget svar)';
+    const correctText = `${letters[correct]}) ${q.options[correct]}`;
+    return `<div class="answer-item">
+      <span class="answer-q">${i+1}. ${esc(q.q)}</span>
+      ${ok
+        ? `<span class="answer-correct">✓ ${esc(uaText)}</span>`
+        : `<span class="answer-wrong">✗ ${esc(uaText)}</span><span class="answer-correct">✓ ${esc(correctText)}</span>`}
+    </div>`;
+  }).join('');
+}
+
+// Allow Enter on password field
+document.getElementById('pwInput').addEventListener('keydown', e => {
+  if (e.key === 'Enter') login();
+});
+</script>
+</body>
+</html>
