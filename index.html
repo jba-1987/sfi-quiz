@@ -3,8 +3,1018 @@
 <html lang="sv">
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="widt<!-- SFI Quiz v2 – 2026-04-26 -->
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+<meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>SFI Quiz – FlxKvGul</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: Arial, sans-serif; background: #f5f5f5; color: #000; min-height: 100vh; }
+
+  .app-header { background: #fff; border-bottom: 2px solid #000; padding: 0; display: flex; align-items: center; }
+  .app-header-inner { max-width: 680px; margin: 0 auto; padding: 20px; text-align: center; width: 100%; }
+  .app-title { font-size: 1.2rem; font-weight: 700; display: inline-block; background: #00FF00; padding: 2px 8px; }
+  .app-subtitle { font-size: 0.8rem; color: #444; margin-top: 6px; }
+
+  .main { max-width: 680px; margin: 0 auto; padding: 24px 16px 80px; }
+
+  /* Each card = white box with black border */
+  .card { background: #fff; border: 2px solid #000; padding: 24px; margin-bottom: 12px; }
+
+  /* Quiz title card */
+  .quiz-title-card .quiz-theme { font-size: 1.3rem; font-weight: 700; display: inline-block; background: #00FF00; padding: 2px 8px; margin-bottom: 8px; }
+  .quiz-title-card .quiz-dates { font-size: 0.82rem; color: #444; font-style: italic; margin-bottom: 12px; }
+  .quiz-title-card .quiz-desc { font-size: 0.9rem; line-height: 1.55; }
+
+  /* Name card */
+  .name-label { font-size: 0.78rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 8px; display: block; }
+  .name-input { width: 100%; padding: 10px 12px; font-size: 0.95rem; font-family: Arial, sans-serif; border: 2px solid #000; outline: none; background: #fff; }
+  .name-input:focus { border-width: 3px; }
+
+  /* Question card */
+  .question-num { font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; display: inline-block; background: #00FF00; padding: 1px 6px; margin-bottom: 10px; }
+  .question-text { font-size: 0.98rem; font-weight: 700; margin-bottom: 16px; line-height: 1.45; }
+
+  .options-list { display: flex; flex-direction: column; gap: 7px; }
+  .option-item { display: flex; align-items: center; gap: 12px; padding: 10px 13px; border: 2px solid #000; cursor: pointer; background: #fff; user-select: none; }
+  .option-item:hover:not(.locked) { background: #f5f5f5; }
+  .option-item.selected { background: #fff2cc; }
+  .option-item.correct { background: #e2efda; border-color: #00b050; border-width: 3px; }
+  .option-item.wrong { background: #ffe0e0; border-color: #ff0000; border-width: 3px; }
+  .option-item.show-correct { background: #e2efda; border-color: #00b050; }
+
+  .option-radio { width: 17px; height: 17px; border-radius: 50%; border: 2px solid #000; flex-shrink: 0; display: flex; align-items: center; justify-content: center; background: #fff; }
+  .option-item.selected .option-radio::after { content: ''; width: 8px; height: 8px; border-radius: 50%; background: #000; display: block; }
+  .option-item.correct .option-radio,
+  .option-item.show-correct .option-radio { border-color: #00b050; background: #00b050; }
+  .option-item.correct .option-radio::after,
+  .option-item.show-correct .option-radio::after { content: '✓'; color: #fff; font-size: 10px; font-weight: bold; }
+  .option-item.wrong .option-radio { border-color: #ff0000; background: #ff0000; }
+  .option-item.wrong .option-radio::after { content: '✗'; color: #fff; font-size: 10px; font-weight: bold; }
+  .option-letter { font-size: 0.76rem; font-weight: 700; color: #444; min-width: 18px; }
+  .option-text { font-size: 0.9rem; line-height: 1.4; }
+
+  /* Submit button */
+  .submit-btn { width: 100%; padding: 14px; background: #fff; color: #000; border: 2px solid #000; font-size: 0.95rem; font-weight: 700; font-family: Arial, sans-serif; cursor: pointer; text-transform: uppercase; letter-spacing: 0.04em; margin-top: 4px; }
+  .submit-btn:hover:not(:disabled) { background: #f0f0f0; }
+  .submit-btn:disabled { color: #aaa; border-color: #aaa; cursor: not-allowed; }
+
+  /* Results */
+  .results-score { font-size: 3rem; font-weight: 700; text-align: center; margin-bottom: 4px; }
+  .results-label { font-size: 0.76rem; color: #444; text-transform: uppercase; letter-spacing: 0.08em; font-weight: 700; text-align: center; margin-bottom: 16px; }
+  .results-bar { background: #e0e0e0; border: 1px solid #000; height: 8px; margin: 0 auto 20px; max-width: 280px; }
+  .results-bar-fill { height: 100%; transition: width 1s ease; }
+  .restart-btn { width: 100%; padding: 12px; background: #fff; color: #000; border: 2px solid #000; font-size: 0.88rem; font-weight: 700; font-family: Arial, sans-serif; cursor: pointer; text-transform: uppercase; letter-spacing: 0.04em; margin-top: 12px; }
+  .restart-btn:hover { background: #f0f0f0; }
+
+  .review-title { font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; display: inline-block; background: #00FF00; padding: 2px 8px; margin-bottom: 12px; margin-top: 16px; }
+  .review-item { padding: 9px 0; border-bottom: 1px solid #e0e0e0; font-size: 0.86rem; }
+  .review-q { font-weight: 700; margin-bottom: 3px; }
+  .review-your { font-size: 0.8rem; color: #ff0000; font-weight: 700; }
+  .review-correct { font-size: 0.8rem; color: #00b050; font-weight: 700; }
+  .review-ok { font-size: 0.8rem; color: #00b050; font-weight: 700; }
+
+  /* Landing */
+  .landing { max-width: 500px; margin: 80px auto; padding: 0 20px; text-align: center; }
+  .landing-card { background: #fff; border: 2px solid #000; padding: 40px 32px; }
+  .landing-title { font-size: 1.3rem; font-weight: 700; display: inline-block; background: #00FF00; padding: 2px 8px; margin-bottom: 16px; }
+  .landing-text { font-size: 0.95rem; line-height: 1.6; }
+
+  @media (max-width: 600px) {
+    .main { padding: 14px 10px 60px; }
+    .card { padding: 16px 14px; }
+    .submit-btn, .restart-btn { font-size: 0.88rem; }
+    .results-score { font-size: 2.4rem; }
+  }
+
+  @media (max-width: 360px) {
+    .app-title { font-size: 1rem; }
+    .app-subtitle { font-size: 0.72rem; }
+    .main { padding: 10px 8px 50px; }
+    .card { padding: 13px 11px; }
+    .question-text { font-size: 0.9rem; }
+    .option-text { font-size: 0.82rem; }
+    .option-item { padding: 8px 10px; gap: 8px; }
+    .results-score { font-size: 2rem; }
+    .name-input { font-size: 0.88rem; padding: 8px 10px; }
+    .submit-btn, .restart-btn { padding: 12px; font-size: 0.82rem; }
+  }
+</style>
+</head>
+<body>
+
+<div class="app-header">
+  <div class="app-header-inner">
+    <div class="app-title">SFI Quiz – FlxKvGul</div>
+    <div class="app-subtitle">Hälsa och sjukvård – Kurs C/D</div>
+  </div>
+</div>
+
+<div class="main" id="mainContent"></div>
+
+<script>
+const QUIZZES = [
+  {
+    id: "27-28-text", dates: "26/04/27-28", theme: "Vanliga symptom",
+    questions: [
+      { q: "Vad säger texten om ont i magen i en vecka?", options: ["Det beror säkert på maten","Det är inte något att oroa sig för","Det är något annat än ont i magen en dag","Det går över av sig självt"], correct: 2 },
+      { q: "Vad gör sjuksköterskan på 1177?", options: ["Skriver ett recept åt patienten","Lyssnar och hjälper en att förstå hur allvarligt det är","Bokar tid på sjukhuset direkt","Skäller på en om man väntat för länge"], correct: 1 },
+      { q: "Vad kan läkaren bestämma efter att ha undersökt en?", options: ["Alltid ett recept och vila","Bara ett blodprov","Ett recept, vila och vatten, eller ett blodprov","Att man ska åka till sjukhuset"], correct: 2 },
+      { q: "Vad menar texten med att kroppen och psyket hänger ihop?", options: ["Att man alltid mår dåligt när man är stressad","Att oro och stress kan ge fysiska symptom som ont i magen","Att man inte ska lyssna på kroppen","Att psykiska problem inte är riktiga sjukdomar"], correct: 1 },
+      { q: "Varför kan det vara svårare att söka hjälp i ett nytt land?", options: ["För att vårdcentralen är stängd för utlänningar","För att man kanske inte kan språket eller vet hur systemet fungerar","För att 1177 bara finns på svenska","För att läkarna inte förstår utländska symptom"], correct: 1 }
+    ]
+  },
+  {
+    id: "29-30-text", dates: "26/04/29-30", theme: "Friskvård och förebyggande hälsa",
+    questions: [
+      { q: "Vad är friskvård enligt texten?", options: ["Att gå till läkaren när man är sjuk","Att äta medicin varje dag","Vanor man har för att kroppen ska må bra","Att träna hårt på gym"], correct: 2 },
+      { q: "Vad säger texten är det viktigaste med träning?", options: ["Att ha bra kondition innan man börjar","Att röra på sig ofta, inte att träna hårt","Att simma eller cykla, inte promenera","Att styrketräna för att musklerna ska växa"], correct: 1 },
+      { q: "Vad händer med immunförsvaret om man sover för lite?", options: ["Det blir starkare av att kroppen jobbar mer","Det påverkas inte av sömn","Det försämras och man blir lättare sjuk","Det beror på vad man äter"], correct: 2 },
+      { q: "Vad kan övervikt leda till enligt texten?", options: ["Dålig kondition och svaga muskler","Högt blodtryck och högt blodsocker","Sömnproblem och trötthet","Beroende av socker och fett"], correct: 1 },
+      { q: "Varför är det svårt att sluta röka?", options: ["Det kostar för mycket pengar att sluta","Rökning är bra för avkopplingen","Rökning är ett beroende","Det finns ingen hjälp att få"], correct: 2 },
+      { q: "Vad säger texten om avkoppling?", options: ["Det är viktigare än sömn och kost","Man behöver avkoppling bara om man jobbar mycket","Stress är dåligt för kroppen och man behöver tid för saker man tycker om","En promenad räknas inte som avkoppling"], correct: 2 },
+      { q: "Varför är det bra att göra regelbundna undersökningar?", options: ["Läkaren kan då bestämma vilken träning man ska göra","Man kan hitta problem tidigt och det är lättare att behandla dem då","Det är ett krav i Sverige för alla vuxna","Det hjälper immunförsvaret att bli starkare"], correct: 1 }
+    ]
+  },
+  {
+    id: "04-05-text", dates: "26/05/4-5", theme: "På akuten",
+    questions: [
+      { q: "Vad gör man först när man kommer till akuten?", options: ["Man väntar på en läkare direkt","Man går till receptionen och får en nummerlapp","Man ringer och bokar en tid","Man går till väntrummet och sätter sig"], correct: 1 },
+      { q: "Vem bestämmer vem som får hjälp först på akuten?", options: ["Den som kom dit först","Receptionen","En sjuksköterska","Läkaren"], correct: 2 },
+      { q: "Vilka symtom kräver snabb hjälp enligt texten?", options: ["Lite hosta och ont i halsen","Svårt att andas och stark smärta","Illamående och yrsel","Feber och trötthet"], correct: 1 },
+      { q: "Vad kan hända efter att läkaren har undersökt en?", options: ["Man måste alltid stanna på sjukhuset","Man får alltid en spruta","Man kan få medicin, dropp eller behöva stanna","Man får alltid ett recept och går hem"], correct: 2 },
+      { q: "Vad säger texten om att boka tid på akuten?", options: ["Man måste boka tid minst en dag innan","Man kan ringa och boka samma dag","Man behöver inte boka tid men kan behöva vänta länge","Man bokar tid via 1177"], correct: 2 },
+      { q: "Varför tar man ibland röntgen på akuten?", options: ["Det är obligatoriskt för alla patienter","För att se om man har en infektion eller allergi","Det är en del av läkarens undersökning för att se vad som är fel","Man tar alltid röntgen innan man får medicin"], correct: 2 }
+    ]
+  },
+  {
+    id: "06-07-text", dates: "26/05/6-7", theme: "Sjukskrivning",
+    questions: [
+      { q: "Vad betyder sjukskrivning enligt texten?", options: ["Att man jobbar hemifrån istället","Att man stannar hemma och vilar tills man blir frisk","Att man tar medicin och fortsätter jobba","Att man ansöker om semester"], correct: 1 },
+      { q: "När behövs ett sjukintyg?", options: ["Redan från första dagen","Efter tre dagar","Om sjukskrivningen är längre än sju dagar","Bara om man är inlagd på sjukhus"], correct: 2 },
+      { q: "Vem betalar sjuklön de första fjorton dagarna?", options: ["Försäkringskassan","Vårdcentralen","Arbetsgivaren","Staten"], correct: 2 },
+      { q: "Vad gör en handläggare på Försäkringskassan?", options: ["Skriver sjukintyg åt läkaren","Undersöker patienten","Gör en bedömning och bestämmer om man får sjukpenning","Betalar ut sjuklön direkt"], correct: 2 },
+      { q: "Vad kan hända om Försäkringskassan avslår ansökan?", options: ["Man måste gå tillbaka till jobbet direkt","Man får ingen ersättning","Arbetsgivaren betalar istället","Man måste flytta till ett annat land"], correct: 1 },
+      { q: "Hur återgår man till jobbet enligt texten?", options: ["Man börjar alltid på heltid direkt","Man väntar tills läkaren säger till","Ibland börjar man på deltid först och sedan heltid","Man bestämmer själv när man vill börja"], correct: 2 }
+    ]
+  },
+  {
+    id: "11-12-text", dates: "26/05/11-12", theme: "Fysioterapi",
+    questions: [
+      { q: "Vad handlar fysioterapi om enligt texten?", options: ["Att operera skadade muskler och leder","Att hjälpa kroppen att röra sig bättre och minska smärta","Att skriva ut medicin för smärta","Att vila kroppen tills den läker av sig själv"], correct: 1 },
+      { q: "Vilka söker ofta fysioterapi enligt texten?", options: ["Bara äldre personer med rörelseproblem","Personer som vill gå ner i vikt","Personer efter en skada eller operation","Bara idrottare med muskelproblem"], correct: 2 },
+      { q: "Vad kan en behandling innehålla?", options: ["Bara massage och avslappning","Träning, stretching, massage och avslappning","Bara styrketräning med skivstång","Operation och medicin"], correct: 1 },
+      { q: "Vad lär man sig hos fysioterapeuten?", options: ["Hur man lagar mat på ett hälsosamt sätt","Hur man sover bättre på natten","Hur man står, sitter och lyfter på rätt sätt","Hur man använder träningsmaskiner på gym"], correct: 2 },
+      { q: "Varför är hållning och andning viktiga?", options: ["Det gör träningen roligare","Det hjälper ryggen och förhindrar att smärtan kommer tillbaka","Det är krav från Försäkringskassan","Det ersätter all annan träning"], correct: 1 },
+      { q: "Vad är syftet med uppföljning?", options: ["Att skriva ett nytt sjukintyg","Att fysioterapeuten följer hur det går och justerar träningsprogrammet","Att patienten kan sluta träna hemma","Att bestämma om man behöver en operation"], correct: 1 }
+    ]
+  },
+  {
+    id: "13-14-text", dates: "26/05/13-14", theme: "Psykoterapi",
+    questions: [
+      { q: "Vad är målet med psykoterapi enligt texten?", options: ["Att få medicin för ångest och depression","Att må bättre och förstå sig själv bättre","Att sluta träffa vänner och familj","Att lösa ekonomiska problem"], correct: 1 },
+      { q: "Vad är KBT?", options: ["En typ av gruppterapi för familjer","En metod som hjälper en att ändra negativa tankemönster och beteenden","Ett läkemedel mot ångest","En avslappningsmetod som används inom mindfulness"], correct: 1 },
+      { q: "Vad är en fördel med gruppterapi enligt texten?", options: ["Det är billigare än samtalsterapi","Man slipper prata om sina känslor","Man kan höra att man inte är ensam om sina problem","Man träffar terapeuten mer sällan"], correct: 2 },
+      { q: "Vad betyder tystnadsplikt?", options: ["Att man inte får prata under sessionerna","Att det man pratar om stannar hos terapeuten","Att terapeuten inte får föra journal","Att man måste betala extra för varje besök"], correct: 1 },
+      { q: "Hur får man tillgång till psykoterapi i Sverige?", options: ["Man bokar direkt hos en privat terapeut","Man ansöker via Försäkringskassan","Man kan få remiss via vårdcentralen","Man måste vänta på ett beslut från sjukhuset"], correct: 2 },
+      { q: "Vad säger texten om att söka hjälp?", options: ["Man ska vänta och se om det går över av sig självt","Det är viktigt att våga söka hjälp – många väntar för länge","Psykoterapi passar bara för allvarliga sjukdomar","Man behöver inte söka hjälp om man har bra vänner"], correct: 1 }
+    ]
+  },
+  {
+    id: "27-28-hitta-hem", dates: "26/04/27-28", theme: "Hitta hem S2E9 – Oväntat besök",
+    questions: [
+      { q: "Vilka ska Martina träffa?", options: ["mammagruppen","gamla klasskamrater","Jamals mamma"], correct: 0 },
+      { q: "Vem ringer på dörren hos Jamal och Martina?", options: ["Martina","Hassan","Shilan"], correct: 2 },
+      { q: "Varför blir Jamal överraskad när hans mamma kommer?", options: ["Hon kommer en vecka för tidigt","Hon skulle inte komma alls","Hon kommer en månad för tidigt"], correct: 0 },
+      { q: "Varför blir promenaden inte som Martina tänkt?", options: ["De andra mammorna tränar medan de träffas","De andra mammorna har med sig matsäck","De andra mammorna pratar inte med Martina"], correct: 0 },
+      { q: "Vad smakar Shilan hemma hos Martina och Jamal?", options: ["sill","köttbullar","pannkaka"], correct: 0 },
+      { q: "Hur slutar promenaden för Martina?", options: ["Hon springer ifrån de andra mammorna","Hon börjar bråka med de andra mammorna","Hon ger upp och går hem"], correct: 2 },
+      { q: "Varför har Martina och Jamal sill i kylen?", options: ["De tycker att sill är gott","De ska ta med sillen på midsommar","Sillen är till Axel"], correct: 1 },
+      { q: "Varför berättade inte Jamal om sin mammas besök?", options: ["Han trodde att Martina skulle vägra att släppa in Shilan","Han visste inte vad han skulle säga","Han trodde att Martina skulle bli arg"], correct: 2 },
+      { q: "Varför är Martina irriterad?", options: ["För att Jamal inte törs säga som det är","För att Shilan är på besök","För att promenaden blev misslyckad"], correct: 0 },
+      { q: "Vill Shilan följa med på midsommar?", options: ["Nej, hon vill stanna hemma","Ja, om hon slipper äta sill","Ja, om hon får sjunga Små grodorna"], correct: 1 }
+    ]
+  },
+  {
+    id: "29-30-hitta-hem", dates: "26/04/29-30", theme: "Hitta hem S2E10 – \"Glad\" midsommar",
+    questions: [
+      { q: "Vad ska Martina, Jamal och Shilan göra?", options: ["Åka på semester","Gå på museum","Fira midsommar"], correct: 2 },
+      { q: "Vad gör Hassan i kolonistugan?", options: ["Skriver ett brev till Ylva","Firar midsommar med grannen","Lagar middag till Ylva"], correct: 0 },
+      { q: "Var har Konrad sin stuga?", options: ["På Värmdö","På Djurgården","I Dalarna"], correct: 0 },
+      { q: "Jamal blir besviken. Varför?", options: ["Konrad har ingen sill","Konrad har ingen midsommarstång","Konrad har ingen snaps"], correct: 1 },
+      { q: "Vad är \"en rackare\"?", options: ["En bit bröd","En tugga sill","Ett glas med snaps"], correct: 2 },
+      { q: "Vad gör de efter middagen?", options: ["Dricker kaffe","Spelar kubb","Sjunger allsång"], correct: 1 },
+      { q: "Martina får ett SMS. Från vem?", options: ["Ylva","Hassan","Lena"], correct: 0 },
+      { q: "Martina blir arg. Vad gör hon?", options: ["Hon går på en promenad","Hon kastar en pinne på Konrad","Hon stänger in sig i stugan"], correct: 1 },
+      { q: "Vem träffar Hassan på Sergels torg?", options: ["En kompis","Ylva","En polis"], correct: 0 },
+      { q: "Shilan får köra bilen hem. Varför?", options: ["Shilan vill öva sig på att köra bil i Sverige","De andra är för trötta","De andra har druckit alkohol"], correct: 2 }
+    ]
+  },
+  {
+    id: "04-05-hitta-hem", dates: "26/05/4-5", theme: "Hitta hem S2E11 – Saknad",
+    questions: [
+      { q: "Vad gör Shilan när Ylva ringer?", options: ["Hon är ute och går","Hon är på bio med Martina","Hon leker med Axel"], correct: 2 },
+      { q: "Varför ringer Ylva till Jamal?", options: ["De ska äta middag","De ska leta efter Hassan","De ska åka till Migrationsverket"], correct: 1 },
+      { q: "Martina blir arg. Varför?", options: ["Hon tycker att Jamal kan ta hand om Axel","Hon tycker att hon letar bättre än Jamal","Hon vill inte vara ensam med Shilan"], correct: 0 },
+      { q: "Shilan vill lösa bråket. Hur?", options: ["Hon kan ta hand om Axel","Hon kan hjälpa till att leta","Hon kan laga middag"], correct: 0 },
+      { q: "Vad handlar Ylvas lektion om?", options: ["substantiv","prepositioner","verb"], correct: 1 },
+      { q: "Vilka hjälper till att leta efter klassen?", options: ["Ylvas familj","Ylvas kollega","Ylvas elever"], correct: 2 },
+      { q: "Vad gör killarna på Kulturhuset?", options: ["Dricker kaffe","Läser tidningar","Spelar schack"], correct: 2 },
+      { q: "Vad lagar Shilan?", options: ["En gryta med kyckling och tomat","En gryta med lamm och paprika","Sill och potatis"], correct: 0 },
+      { q: "Var letar Jamal efter Hassan?", options: ["Vid kolonilotten","Under bron","På Kulturhuset"], correct: 1 },
+      { q: "Hassan är på väg att få ett nytt jobb. Hur känner han?", options: ["Han är ivrig","Han är glad","Han verkar orolig"], correct: 2 }
+    ]
+  },
+  {
+    id: "06-07-hitta-hem", dates: "26/05/6-7", theme: "Hitta hem S2E12 – Spanien kallar",
+    questions: [
+      { q: "Var är Martina och Shilan?", options: ["Inne i Stockholm","På Skansen","Hos Konrad"], correct: 0 },
+      { q: "Varför blir Jimmy arg på Hassan?", options: ["Han har varit sjuk","Han kommer för sent","Han kan inte måla"], correct: 1 },
+      { q: "Vad får Hassan göra?", options: ["Han får måla","Dela ut paket","Bygga hus"], correct: 1 },
+      { q: "Vad gör Martina och Shilan?", options: ["Åker buss","Åker spårvagn","Åker båt"], correct: 1 },
+      { q: "Vad vill Shilan göra?", options: ["fiska","bada","dyka"], correct: 0 },
+      { q: "Vad säger Ylvas kollega?", options: ["Att Hassan ligger på sjukhus","Att Hassan lämnat Sverige","Att Hassan gömmer sig för Ylva"], correct: 1 },
+      { q: "Martina betalar fikat. Vad säger hon att hon gör?", options: ["bettar","blippar","pantar"], correct: 1 },
+      { q: "Hur beskriver Martina Jamal?", options: ["Han är envis","Han är arg","Han är sur"], correct: 0 },
+      { q: "Martina får ett mail. Vad står det?", options: ["Hon har fått ett jobb i Göteborg","Hon har fått föräldrapenning","Hon har fått ett jobb i Barcelona"], correct: 2 },
+      { q: "Vad säger Jamal om Martinas mail?", options: ['"Perfekt!"','"Vad synd!"','"Kan mamma flytta med?"'], correct: 1 }
+    ]
+  },
+  {
+    id: "11-12-hitta-hem", dates: "26/05/11-12", theme: "Hitta hem S2E13 – Hassans beslut",
+    questions: [
+      { q: "Varför vill Hassan inte träffa Yasmin?", options: ["Han är sjuk och vill inte smitta Yasmin","Han tycker inte om Yasmin","Han vill inte dra in Yasmin i något dåligt"], correct: 2 },
+      { q: "Varför är Konrad bekymrad?", options: ["Hassan träffar Jimmy Dahlgren","Han har för mycket att göra","Abbas stör honom"], correct: 0 },
+      { q: "Hur får Konrad veta var Hassan är?", options: ["Jimmy Dahlgren berättar det för Konrad","Abbas berättar det för Konrad","Hassan berättar det för Konrad"], correct: 1 },
+      { q: "Var är Yasmin när Hassan ringer?", options: ["På SFI","På Migrationsverket","Hos Jimmy Dahlgren"], correct: 0 },
+      { q: "Vad vill Ylvas kollega egentligen?", options: ["Ta hand om Ylvas lektion","Klaga på Ylva","Hjälpa till"], correct: 1 },
+      { q: "Varför lämnar Hassan tillbaka paketet till Jimmy?", options: ["Han vill inte göra något olagligt","Han hann inte lämna paketet","Han hittade inte till adressen"], correct: 0 },
+      { q: "Vem hjälper Hassan ut från Jimmys ställe?", options: ["Ylva","Konrad","Yasmin"], correct: 1 },
+      { q: "Vad får Hassan av Konrad?", options: ["Ett pass","Karatepinnar","Sin lön"], correct: 1 },
+      { q: "Konrad skjutsar Hassan. Vart?", options: ["Till Ylvas kolonistuga","Till SFI","Till Jamal och Martina"], correct: 0 },
+      { q: "Vad säger Shilan till Jamal?", options: ["Att Jamal måste komma hem och hälsa på Shilan","Att Jamal måste lyssna på Martina","Att Jamal inte ska skjutsa henne till flyget"], correct: 1 }
+    ]
+  },
+  {
+    id: "13-14-hitta-hem", dates: "26/05/13-14", theme: "Hitta hem S2E14 – Picknick",
+    questions: [
+      { q: "Vart ringer Martina?", options: ["Till Jamal","Till Försäkringskassan","Till Migrationsverket"], correct: 1 },
+      { q: "Varför får hon ingen hjälp när hon ringer?", options: ["Hon bryter för mycket på spanska","Hon pratar för fort","Hon pratar för tyst"], correct: 0 },
+      { q: "Vad betyder det att \"vara en klippa\"?", options: ["Att du är duktig på att klippa","Att du är bra på något","Att du är bra på att klättra"], correct: 1 },
+      { q: "Martina får ett SMS. Vart ska hon?", options: ["Till Fjärilshuset","Till Wasamuséet","Till Hagaparken"], correct: 2 },
+      { q: "Vad gör Hassan och Yasmin?", options: ["De badar","De åker båt","De cyklar"], correct: 0 },
+      { q: "Varifrån kommer Yasmin?", options: ["Eritrea","Etiopien","Egypten"], correct: 0 },
+      { q: "Vad har Jamal gjort?", options: ["Klippt sig","Klätt ut sig","Brutit benet"], correct: 1 },
+      { q: "Varför tittar andra besökare på Jamal?", options: ["Han ser fortfarande ut som Bellman","Han sjunger högt för Martina","Han blir rädd för en fjäril"], correct: 0 },
+      { q: "Varför överraskar Jamal Martina?", options: ["Han ville ha en picknick","Han älskar fjärilar","Han har varit tråkig och tänkt för mycket på sig själv"], correct: 2 },
+      { q: "Hur förklarar Martina hur hon känner?", options: ["Hon sjunger en sång av Bellman","Hon visar skillnaden mellan en puppa och en fjäril","Hon skriver ett brev"], correct: 1 }
+    ]
+  },
+  {
+    id: "29-30-radio", dates: "26/04/29-30", theme: "Radio: Unga och politik på TikTok",
+    questions: [
+      { q: "Hur följer de flesta människor politik i Sverige?", options: ["Via TikTok och sociala medier","Via tv, radio och tidningar","Via poddar och YouTube"], correct: 1 },
+      { q: "Vad tycker Petronella Rahimi om politiskt innehåll på TikTok?", options: ["Att det är bra och informativt för unga","Att det är för skämtsamt och saknar bra nyhetskällor","Att det är det bästa sättet att lära sig om politik"], correct: 1 },
+      { q: "Varför gör politiker lättsammare innehåll på TikTok?", options: ["För att de inte kan göra seriöst innehåll","För att skapa ett emotionellt band med unga väljare","För att TikTok kräver roligt innehåll"], correct: 1 }
+    ]
+  },
+  {
+    id: "04-05-radio", dates: "26/05/4-5", theme: "Radio: Fyra killar räddade en älg",
+    questions: [
+      { q: "Var hände älgräddningen?", options: ["I Vindelälven i Västerbotten","I en sjö i Dalarna","I havet utanför Göteborg"], correct: 0 },
+      { q: "Hur fick killarna upp älgen ur vattnet?", options: ["De simmade ut och bar upp henne","De använde ett rep för att dra upp hennes ben på isen","De ringde räddningstjänsten som kom med en kran"], correct: 1 },
+      { q: "Hur länge vilade älgen på isen innan hon gick iväg?", options: ["En halvtimme","Två timmar","Fyra timmar"], correct: 1 }
+    ]
+  },
+  {
+    id: "06-07-radio", dates: "26/05/6-7", theme: "Radio: Äldre lär sig om AI",
+    questions: [
+      { q: "Varför ordnar studieförbundet utbildningar om AI för äldre?", options: ["För att äldre ska kunna jobba med AI","För att skydda dem mot bedragare som använder AI","För att äldre ska lära sig programmera"], correct: 1 },
+      { q: "Vad hoppas Karin Edler från studieförbundet på?", options: ["Att äldre ska börja använda AI på jobbet","Att äldre inte ska bli rädda för appar och internet på grund av AI","Att äldre ska lära sig göra egna AI-program"], correct: 1 },
+      { q: "Vad säger Irene Westberg om att testa nya saker?", options: ["Att man ska vänta tills AI är säkrare","Att man ska hoppa på tåget och våga testa","Att det är farligt att använda AI om man är äldre"], correct: 1 }
+    ]
+  },
+  {
+    id: "11-12-radio", dates: "26/05/11-12", theme: "Radio: Elever får jobba på skoltid",
+    questions: [
+      { q: "Vilka skolor satsar på att elever får jobba under skoltid?", options: ["Skolor i välbärgade områden","Skolor i utsatta områden","Alla högstadieskolor i Sverige"], correct: 1 },
+      { q: "Vad har hänt med närvaron i skolan för de elever som jobbar?", options: ["Den har blivit lägre","Den är oförändrad","Den har blivit högre"], correct: 2 },
+      { q: "Vad lärde sig Adrina Mehrdadian Fard av att jobba?", options: ["Hur man programmerar kassasystem","Hur man ska vara på en jobbintervju och att prata med nya människor","Hur man söker jobb via internet"], correct: 1 }
+    ]
+  },
+  {
+    id: "13-14-radio", dates: "26/05/13-14", theme: "Radio: Studenter fuskar med AI",
+    questions: [
+      { q: "Vad är nu det vanligaste sättet för studenter att fuska, enligt UKÄ?", options: ["Att kopiera från böcker","Att fuska med hjälp av AI","Att samarbeta otillåtet på tentor"], correct: 1 },
+      { q: "Alicia Ravandoni tycker att det går över gränsen när man...", options: ["Använder AI för att förstå något man läser","Frågar en kompis om hjälp med texten","Använder AI för att skriva sin text"], correct: 2 },
+      { q: "Lovisa Scherp Nilsson jämför sina studier innan och efter AI. Vad säger hon?", options: ["Hon lärde sig lika mycket med och utan AI","Hon lärde sig mer innan AI-verktyg blev vanliga","Hon tycker att AI gör studierna roligare"], correct: 1 }
+    ]
+  },
+  {
+    id: "27-28-radio", dates: "26/04/27-28", theme: "Radio: Kriget i Mellanöstern påverkar Sverige",
+    questions: [
+      { q: "Vad säger regeringen om kriget i Mellanöstern?", options: ["Att det påverkar Sveriges ekonomi mycket","Att det inte påverkar Sverige alls","Att Sverige ska hjälpa till med soldater"], correct: 0 },
+      { q: "Vad kan hända med priserna i Sverige?", options: ["De kan gå ner","De förändras inte","De kan stiga mer – inflationen kan bli högre"], correct: 2 },
+      { q: "Vilka två saker avgör hur mycket svensk ekonomi påverkas?", options: ["Hur långt kriget varar och hur länge transportproblemen fortsätter","Oljepriset och vädret i Sverige","Hur många flyktingar som kommer och hur mycket Sverige exporterar"], correct: 0 }
+    ]
+  }
+];
+
+const SUPABASE_URL = "https://dszfynsqxdgsakfckquo.supabase.co";
+const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRzemZ5bnNxeGRnc2FrZmNrcXVvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzcwNzQ1MDIsImV4cCI6MjA5MjY1MDUwMn0.fC90kH2Y9rqedmwbYB856JqC1-lvYWb1JJry4pGnMqg";
+
+async function saveResult(quizId, quizTheme, score, total, answersArr) {
+  try {
+    await fetch(SUPABASE_URL + '/rest/v1/quiz_results', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + SUPABASE_KEY },
+      body: JSON.stringify({ student_name: userName, quiz_id: quizId, quiz_theme: quizTheme, score: score, total: total, answers: answersArr })
+    });
+  } catch(e) { console.error('Save failed:', e); }
+}
+
+let currentQuiz = null;
+let userName = '';
+let userAnswers = [];
+let submitted = false;
+let phase = 'landing';
+const letters = ['A','B','C','D'];
+const main = document.getElementById('mainContent');
+
+function init() {
+  const hash = window.location.hash.replace('#','');
+  if (!hash) { phase = 'landing'; render(); return; }
+  const quiz = QUIZZES.find(q => q.id === hash);
+  if (!quiz) { phase = 'landing'; render(); return; }
+  currentQuiz = quiz;
+  userAnswers = new Array(quiz.questions.length).fill(null);
+  submitted = false;
+  userName = '';
+  phase = 'quiz';
+  render();
+}
+
+window.addEventListener('hashchange', init);
+
+function render() {
+  if (phase === 'landing') { renderLanding(); return; }
+  if (phase === 'results') { renderResults(); return; }
+  renderQuiz();
+}
+
+function renderLanding() {
+  main.innerHTML = `<div class="landing"><div class="landing-card">
+    <div class="landing-title">SFI Quiz</div>
+    <p class="landing-text">Quiz till Johns SFI-lektioner.<br>Öppna länken från din landningssida för att starta ett quiz.</p>
+  </div></div>`;
+}
+
+function renderQuiz() {
+  const questionsHtml = currentQuiz.questions.map((q, qi) => {
+    const optionsHtml = q.options.map((opt, oi) => {
+      let cls = 'option-item';
+      if (submitted) {
+        cls += ' locked';
+        if (oi === q.correct && userAnswers[qi] === oi) cls = 'option-item locked correct';
+        else if (oi === q.correct) cls += ' show-correct';
+        else if (userAnswers[qi] === oi) cls += ' wrong';
+      } else if (userAnswers[qi] === oi) {
+        cls += ' selected';
+      }
+      const click = submitted ? '' : `onclick="selectAnswer(${qi},${oi})"`;
+      return `<div class="${cls}" ${click}>
+        <div class="option-radio"></div>
+        <span class="option-letter">${letters[oi]})</span>
+        <span class="option-text">${opt}</span>
+      </div>`;
+    }).join('');
+    return `<div class="card question-block-${qi}">
+      <div class="question-num">Fråga ${qi+1}</div>
+      <div class="question-text">${q.q}</div>
+      <div class="options-list">${optionsHtml}</div>
+    </div>`;
+  }).join('');
+
+  const canSubmit = userAnswers.every(a => a !== null) && userName.trim().length >= 2;
+
+  main.innerHTML = `
+    <div class="card quiz-title-card">
+      <div class="quiz-theme">${currentQuiz.theme}</div>
+      <div class="quiz-dates">${currentQuiz.dates}</div>
+      <div class="quiz-desc">Läs texten för lektionen och svara sedan på ${currentQuiz.questions.length} frågor.</div>
+    </div>
+    <div class="card">
+      <label class="name-label" for="nameInput">Ditt namn</label>
+      <input class="name-input" id="nameInput" type="text" placeholder="Skriv ditt namn här..." autocomplete="off" value="${submitted ? userName : ''}" ${submitted ? 'disabled' : ''} oninput="onNameInput(this.value)">
+      <div id="nameError" style="display:none;color:#ff0000;font-size:0.82rem;font-weight:700;margin-top:6px;">Du måste skriva in ditt namn innan du skickar in svaret.</div>
+    </div>
+    ${questionsHtml}
+    ${!submitted
+      ? `<button class="submit-btn" id="submitBtn" onclick="submitAnswers()" ${userAnswers.every(a => a !== null) ? '' : 'disabled'}>Skicka in svar</button>`
+      : ''}`;
+
+
+}
+
+function onNameInput(val) {
+  userName = val.trim();
+  const btn = document.getElementById('submitBtn');
+  if (btn) btn.disabled = !(userAnswers.every(a => a !== null) && userName.length >= 2);
+}
+
+function selectAnswer(qi, oi) {
+  if (submitted) return;
+  const nameInp = document.getElementById('nameInput');
+  if (nameInp) userName = nameInp.value.trim();
+  userAnswers[qi] = oi;
+  // Only update this question's options, no full re-render = no scroll
+  const block = document.querySelector('.question-block-' + qi);
+  if (block) {
+    block.querySelectorAll('.option-item').forEach((el, idx) => {
+      el.className = idx === oi ? 'option-item selected' : 'option-item';
+    });
+  }
+  // Update submit button
+  const btn = document.getElementById('submitBtn');
+  if (btn) btn.disabled = !(userAnswers.every(a => a !== null) && userName.length >= 2);
+}
+
+function submitAnswers() {
+  const inp = document.getElementById('nameInput');
+  if (inp) userName = inp.value.trim();
+  if (userName.length < 2) {
+    if (inp) {
+      inp.style.borderColor = '#ff0000';
+      inp.style.borderWidth = '3px';
+      const err = document.getElementById('nameError');
+      if (err) err.style.display = 'block';
+    }
+    return;
+  }
+  if (userAnswers.some(a => a === null)) return;
+  const score = userAnswers.filter((a,i) => a === currentQuiz.questions[i].correct).length;
+  saveResult(currentQuiz.id, currentQuiz.theme, score, currentQuiz.questions.length, userAnswers);
+  phase = 'results';
+  render();
+  window.scrollTo(0, 0);
+}
+
+function showResults() {}
+
+function renderResults() {
+  const total = currentQuiz.questions.length;
+  const score = userAnswers.filter((a,i) => a === currentQuiz.questions[i].correct).length;
+  const pct = Math.round(score/total*100);
+  const barColor = pct >= 80 ? '#00b050' : pct >= 60 ? '#ffc000' : '#ff0000';
+
+  const reviewHtml = currentQuiz.questions.map((q,i) => {
+    const ua = userAnswers[i];
+    const ok = ua === q.correct;
+    return `<div class="review-item">
+      <div class="review-q">${i+1}. ${q.q}</div>
+      ${ok
+        ? `<div class="review-ok">✓ ${letters[ua]}) ${q.options[ua]}</div>`
+        : `<div class="review-your">✗ Ditt svar: ${ua !== null ? letters[ua]+') '+q.options[ua] : '(inget svar)'}</div>
+           <div class="review-correct">✓ Rätt: ${letters[q.correct]}) ${q.options[q.correct]}</div>`}
+    </div>`;
+  }).join('');
+
+  main.innerHTML = `<div class="card">
+    <div class="results-score">${score}/${total}</div>
+    <div class="results-label">poäng · ${pct}%</div>
+    <div class="results-bar"><div class="results-bar-fill" id="resBar" style="width:0%;background:${barColor}"></div></div>
+    <div style="text-align:center;font-size:0.9rem;font-weight:700;margin-top:8px">${userName}</div>
+    <div style="text-align:center;font-size:0.82rem;color:#444;font-style:italic;margin-top:3px">${currentQuiz.theme}</div>
+    <div class="review-title">Genomgång</div>
+    ${reviewHtml}
+    <button class="restart-btn" onclick="restartQuiz()">Försök igen</button>
+  </div>`;
+  setTimeout(() => { const b = document.getElementById('resBar'); if(b) b.style.width = pct+'%'; }, 100);
+}
+
+function restartQuiz() {
+  userAnswers = new Array(currentQuiz.questions.length).fill(null);
+  submitted = false;
+  userName = '';
+  phase = 'quiz';
+  render();
+  window.scrollTo(0, 0);
+}
+
+init();
+</script>
+</body>
+</html>
+h=device-width, initial-scale=1.0">
+<title>SFI Quiz – FlxKvGul<<!-- SFI Quiz v2 – 2026-04-26 -->
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SFI Quiz – FlxKvGul</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: Arial, sans-serif; background: #f5f5f5; color: #000; min-height: 100vh; }
+
+  .app-header { background: #fff; border-bottom: 2px solid #000; padding: 0; display: flex; align-items: center; }
+  .app-header-inner { max-width: 680px; margin: 0 auto; padding: 20px; text-align: center; width: 100%; }
+  .app-title { font-size: 1.2rem; font-weight: 700; display: inline-block; background: #00FF00; padding: 2px 8px; }
+  .app-subtitle { font-size: 0.8rem; color: #444; margin-top: 6px; }
+
+  .main { max-width: 680px; margin: 0 auto; padding: 24px 16px 80px; }
+
+  /* Each card = white box with black border */
+  .card { background: #fff; border: 2px solid #000; padding: 24px; margin-bottom: 12px; }
+
+  /* Quiz title card */
+  .quiz-title-card .quiz-theme { font-size: 1.3rem; font-weight: 700; display: inline-block; background: #00FF00; padding: 2px 8px; margin-bottom: 8px; }
+  .quiz-title-card .quiz-dates { font-size: 0.82rem; color: #444; font-style: italic; margin-bottom: 12px; }
+  .quiz-title-card .quiz-desc { font-size: 0.9rem; line-height: 1.55; }
+
+  /* Name card */
+  .name-label { font-size: 0.78rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 8px; display: block; }
+  .name-input { width: 100%; padding: 10px 12px; font-size: 0.95rem; font-family: Arial, sans-serif; border: 2px solid #000; outline: none; background: #fff; }
+  .name-input:focus { border-width: 3px; }
+
+  /* Question card */
+  .question-num { font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; display: inline-block; background: #00FF00; padding: 1px 6px; margin-bottom: 10px; }
+  .question-text { font-size: 0.98rem; font-weight: 700; margin-bottom: 16px; line-height: 1.45; }
+
+  .options-list { display: flex; flex-direction: column; gap: 7px; }
+  .option-item { display: flex; align-items: center; gap: 12px; padding: 10px 13px; border: 2px solid #000; cursor: pointer; background: #fff; user-select: none; }
+  .option-item:hover:not(.locked) { background: #f5f5f5; }
+  .option-item.selected { background: #fff2cc; }
+  .option-item.correct { background: #e2efda; border-color: #00b050; border-width: 3px; }
+  .option-item.wrong { background: #ffe0e0; border-color: #ff0000; border-width: 3px; }
+  .option-item.show-correct { background: #e2efda; border-color: #00b050; }
+
+  .option-radio { width: 17px; height: 17px; border-radius: 50%; border: 2px solid #000; flex-shrink: 0; display: flex; align-items: center; justify-content: center; background: #fff; }
+  .option-item.selected .option-radio::after { content: ''; width: 8px; height: 8px; border-radius: 50%; background: #000; display: block; }
+  .option-item.correct .option-radio,
+  .option-item.show-correct .option-radio { border-color: #00b050; background: #00b050; }
+  .option-item.correct .option-radio::after,
+  .option-item.show-correct .option-radio::after { content: '✓'; color: #fff; font-size: 10px; font-weight: bold; }
+  .option-item.wrong .option-radio { border-color: #ff0000; background: #ff0000; }
+  .option-item.wrong .option-radio::after { content: '✗'; color: #fff; font-size: 10px; font-weight: bold; }
+  .option-letter { font-size: 0.76rem; font-weight: 700; color: #444; min-width: 18px; }
+  .option-text { font-size: 0.9rem; line-height: 1.4; }
+
+  /* Submit button */
+  .submit-btn { width: 100%; padding: 14px; background: #fff; color: #000; border: 2px solid #000; font-size: 0.95rem; font-weight: 700; font-family: Arial, sans-serif; cursor: pointer; text-transform: uppercase; letter-spacing: 0.04em; margin-top: 4px; }
+  .submit-btn:hover:not(:disabled) { background: #f0f0f0; }
+  .submit-btn:disabled { color: #aaa; border-color: #aaa; cursor: not-allowed; }
+
+  /* Results */
+  .results-score { font-size: 3rem; font-weight: 700; text-align: center; margin-bottom: 4px; }
+  .results-label { font-size: 0.76rem; color: #444; text-transform: uppercase; letter-spacing: 0.08em; font-weight: 700; text-align: center; margin-bottom: 16px; }
+  .results-bar { background: #e0e0e0; border: 1px solid #000; height: 8px; margin: 0 auto 20px; max-width: 280px; }
+  .results-bar-fill { height: 100%; transition: width 1s ease; }
+  .restart-btn { width: 100%; padding: 12px; background: #fff; color: #000; border: 2px solid #000; font-size: 0.88rem; font-weight: 700; font-family: Arial, sans-serif; cursor: pointer; text-transform: uppercase; letter-spacing: 0.04em; margin-top: 12px; }
+  .restart-btn:hover { background: #f0f0f0; }
+
+  .review-title { font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; display: inline-block; background: #00FF00; padding: 2px 8px; margin-bottom: 12px; margin-top: 16px; }
+  .review-item { padding: 9px 0; border-bottom: 1px solid #e0e0e0; font-size: 0.86rem; }
+  .review-q { font-weight: 700; margin-bottom: 3px; }
+  .review-your { font-size: 0.8rem; color: #ff0000; font-weight: 700; }
+  .review-correct { font-size: 0.8rem; color: #00b050; font-weight: 700; }
+  .review-ok { font-size: 0.8rem; color: #00b050; font-weight: 700; }
+
+  /* Landing */
+  .landing { max-width: 500px; margin: 80px auto; padding: 0 20px; text-align: center; }
+  .landing-card { background: #fff; border: 2px solid #000; padding: 40px 32px; }
+  .landing-title { font-size: 1.3rem; font-weight: 700; display: inline-block; background: #00FF00; padding: 2px 8px; margin-bottom: 16px; }
+  .landing-text { font-size: 0.95rem; line-height: 1.6; }
+
+  @media (max-width: 600px) {
+    .main { padding: 14px 10px 60px; }
+    .card { padding: 16px 14px; }
+    .submit-btn, .restart-btn { font-size: 0.88rem; }
+    .results-score { font-size: 2.4rem; }
+  }
+
+  @media (max-width: 360px) {
+    .app-title { font-size: 1rem; }
+    .app-subtitle { font-size: 0.72rem; }
+    .main { padding: 10px 8px 50px; }
+    .card { padding: 13px 11px; }
+    .question-text { font-size: 0.9rem; }
+    .option-text { font-size: 0.82rem; }
+    .option-item { padding: 8px 10px; gap: 8px; }
+    .results-score { font-size: 2rem; }
+    .name-input { font-size: 0.88rem; padding: 8px 10px; }
+    .submit-btn, .restart-btn { padding: 12px; font-size: 0.82rem; }
+  }
+</style>
+</head>
+<body>
+
+<div class="app-header">
+  <div class="app-header-inner">
+    <div class="app-title">SFI Quiz – FlxKvGul</div>
+    <div class="app-subtitle">Hälsa och sjukvård – Kurs C/D</div>
+  </div>
+</div>
+
+<div class="main" id="mainContent"></div>
+
+<script>
+const QUIZZES = [
+  {
+    id: "27-28-text", dates: "26/04/27-28", theme: "Vanliga symptom",
+    questions: [
+      { q: "Vad säger texten om ont i magen i en vecka?", options: ["Det beror säkert på maten","Det är inte något att oroa sig för","Det är något annat än ont i magen en dag","Det går över av sig självt"], correct: 2 },
+      { q: "Vad gör sjuksköterskan på 1177?", options: ["Skriver ett recept åt patienten","Lyssnar och hjälper en att förstå hur allvarligt det är","Bokar tid på sjukhuset direkt","Skäller på en om man väntat för länge"], correct: 1 },
+      { q: "Vad kan läkaren bestämma efter att ha undersökt en?", options: ["Alltid ett recept och vila","Bara ett blodprov","Ett recept, vila och vatten, eller ett blodprov","Att man ska åka till sjukhuset"], correct: 2 },
+      { q: "Vad menar texten med att kroppen och psyket hänger ihop?", options: ["Att man alltid mår dåligt när man är stressad","Att oro och stress kan ge fysiska symptom som ont i magen","Att man inte ska lyssna på kroppen","Att psykiska problem inte är riktiga sjukdomar"], correct: 1 },
+      { q: "Varför kan det vara svårare att söka hjälp i ett nytt land?", options: ["För att vårdcentralen är stängd för utlänningar","För att man kanske inte kan språket eller vet hur systemet fungerar","För att 1177 bara finns på svenska","För att läkarna inte förstår utländska symptom"], correct: 1 }
+    ]
+  },
+  {
+    id: "29-30-text", dates: "26/04/29-30", theme: "Friskvård och förebyggande hälsa",
+    questions: [
+      { q: "Vad är friskvård enligt texten?", options: ["Att gå till läkaren när man är sjuk","Att äta medicin varje dag","Vanor man har för att kroppen ska må bra","Att träna hårt på gym"], correct: 2 },
+      { q: "Vad säger texten är det viktigaste med träning?", options: ["Att ha bra kondition innan man börjar","Att röra på sig ofta, inte att träna hårt","Att simma eller cykla, inte promenera","Att styrketräna för att musklerna ska växa"], correct: 1 },
+      { q: "Vad händer med immunförsvaret om man sover för lite?", options: ["Det blir starkare av att kroppen jobbar mer","Det påverkas inte av sömn","Det försämras och man blir lättare sjuk","Det beror på vad man äter"], correct: 2 },
+      { q: "Vad kan övervikt leda till enligt texten?", options: ["Dålig kondition och svaga muskler","Högt blodtryck och högt blodsocker","Sömnproblem och trötthet","Beroende av socker och fett"], correct: 1 },
+      { q: "Varför är det svårt att sluta röka?", options: ["Det kostar för mycket pengar att sluta","Rökning är bra för avkopplingen","Rökning är ett beroende","Det finns ingen hjälp att få"], correct: 2 },
+      { q: "Vad säger texten om avkoppling?", options: ["Det är viktigare än sömn och kost","Man behöver avkoppling bara om man jobbar mycket","Stress är dåligt för kroppen och man behöver tid för saker man tycker om","En promenad räknas inte som avkoppling"], correct: 2 },
+      { q: "Varför är det bra att göra regelbundna undersökningar?", options: ["Läkaren kan då bestämma vilken träning man ska göra","Man kan hitta problem tidigt och det är lättare att behandla dem då","Det är ett krav i Sverige för alla vuxna","Det hjälper immunförsvaret att bli starkare"], correct: 1 }
+    ]
+  },
+  {
+    id: "04-05-text", dates: "26/05/4-5", theme: "På akuten",
+    questions: [
+      { q: "Vad gör man först när man kommer till akuten?", options: ["Man väntar på en läkare direkt","Man går till receptionen och får en nummerlapp","Man ringer och bokar en tid","Man går till väntrummet och sätter sig"], correct: 1 },
+      { q: "Vem bestämmer vem som får hjälp först på akuten?", options: ["Den som kom dit först","Receptionen","En sjuksköterska","Läkaren"], correct: 2 },
+      { q: "Vilka symtom kräver snabb hjälp enligt texten?", options: ["Lite hosta och ont i halsen","Svårt att andas och stark smärta","Illamående och yrsel","Feber och trötthet"], correct: 1 },
+      { q: "Vad kan hända efter att läkaren har undersökt en?", options: ["Man måste alltid stanna på sjukhuset","Man får alltid en spruta","Man kan få medicin, dropp eller behöva stanna","Man får alltid ett recept och går hem"], correct: 2 },
+      { q: "Vad säger texten om att boka tid på akuten?", options: ["Man måste boka tid minst en dag innan","Man kan ringa och boka samma dag","Man behöver inte boka tid men kan behöva vänta länge","Man bokar tid via 1177"], correct: 2 },
+      { q: "Varför tar man ibland röntgen på akuten?", options: ["Det är obligatoriskt för alla patienter","För att se om man har en infektion eller allergi","Det är en del av läkarens undersökning för att se vad som är fel","Man tar alltid röntgen innan man får medicin"], correct: 2 }
+    ]
+  },
+  {
+    id: "06-07-text", dates: "26/05/6-7", theme: "Sjukskrivning",
+    questions: [
+      { q: "Vad betyder sjukskrivning enligt texten?", options: ["Att man jobbar hemifrån istället","Att man stannar hemma och vilar tills man blir frisk","Att man tar medicin och fortsätter jobba","Att man ansöker om semester"], correct: 1 },
+      { q: "När behövs ett sjukintyg?", options: ["Redan från första dagen","Efter tre dagar","Om sjukskrivningen är längre än sju dagar","Bara om man är inlagd på sjukhus"], correct: 2 },
+      { q: "Vem betalar sjuklön de första fjorton dagarna?", options: ["Försäkringskassan","Vårdcentralen","Arbetsgivaren","Staten"], correct: 2 },
+      { q: "Vad gör en handläggare på Försäkringskassan?", options: ["Skriver sjukintyg åt läkaren","Undersöker patienten","Gör en bedömning och bestämmer om man får sjukpenning","Betalar ut sjuklön direkt"], correct: 2 },
+      { q: "Vad kan hända om Försäkringskassan avslår ansökan?", options: ["Man måste gå tillbaka till jobbet direkt","Man får ingen ersättning","Arbetsgivaren betalar istället","Man måste flytta till ett annat land"], correct: 1 },
+      { q: "Hur återgår man till jobbet enligt texten?", options: ["Man börjar alltid på heltid direkt","Man väntar tills läkaren säger till","Ibland börjar man på deltid först och sedan heltid","Man bestämmer själv när man vill börja"], correct: 2 }
+    ]
+  },
+  {
+    id: "11-12-text", dates: "26/05/11-12", theme: "Fysioterapi",
+    questions: [
+      { q: "Vad handlar fysioterapi om enligt texten?", options: ["Att operera skadade muskler och leder","Att hjälpa kroppen att röra sig bättre och minska smärta","Att skriva ut medicin för smärta","Att vila kroppen tills den läker av sig själv"], correct: 1 },
+      { q: "Vilka söker ofta fysioterapi enligt texten?", options: ["Bara äldre personer med rörelseproblem","Personer som vill gå ner i vikt","Personer efter en skada eller operation","Bara idrottare med muskelproblem"], correct: 2 },
+      { q: "Vad kan en behandling innehålla?", options: ["Bara massage och avslappning","Träning, stretching, massage och avslappning","Bara styrketräning med skivstång","Operation och medicin"], correct: 1 },
+      { q: "Vad lär man sig hos fysioterapeuten?", options: ["Hur man lagar mat på ett hälsosamt sätt","Hur man sover bättre på natten","Hur man står, sitter och lyfter på rätt sätt","Hur man använder träningsmaskiner på gym"], correct: 2 },
+      { q: "Varför är hållning och andning viktiga?", options: ["Det gör träningen roligare","Det hjälper ryggen och förhindrar att smärtan kommer tillbaka","Det är krav från Försäkringskassan","Det ersätter all annan träning"], correct: 1 },
+      { q: "Vad är syftet med uppföljning?", options: ["Att skriva ett nytt sjukintyg","Att fysioterapeuten följer hur det går och justerar träningsprogrammet","Att patienten kan sluta träna hemma","Att bestämma om man behöver en operation"], correct: 1 }
+    ]
+  },
+  {
+    id: "13-14-text", dates: "26/05/13-14", theme: "Psykoterapi",
+    questions: [
+      { q: "Vad är målet med psykoterapi enligt texten?", options: ["Att få medicin för ångest och depression","Att må bättre och förstå sig själv bättre","Att sluta träffa vänner och familj","Att lösa ekonomiska problem"], correct: 1 },
+      { q: "Vad är KBT?", options: ["En typ av gruppterapi för familjer","En metod som hjälper en att ändra negativa tankemönster och beteenden","Ett läkemedel mot ångest","En avslappningsmetod som används inom mindfulness"], correct: 1 },
+      { q: "Vad är en fördel med gruppterapi enligt texten?", options: ["Det är billigare än samtalsterapi","Man slipper prata om sina känslor","Man kan höra att man inte är ensam om sina problem","Man träffar terapeuten mer sällan"], correct: 2 },
+      { q: "Vad betyder tystnadsplikt?", options: ["Att man inte får prata under sessionerna","Att det man pratar om stannar hos terapeuten","Att terapeuten inte får föra journal","Att man måste betala extra för varje besök"], correct: 1 },
+      { q: "Hur får man tillgång till psykoterapi i Sverige?", options: ["Man bokar direkt hos en privat terapeut","Man ansöker via Försäkringskassan","Man kan få remiss via vårdcentralen","Man måste vänta på ett beslut från sjukhuset"], correct: 2 },
+      { q: "Vad säger texten om att söka hjälp?", options: ["Man ska vänta och se om det går över av sig självt","Det är viktigt att våga söka hjälp – många väntar för länge","Psykoterapi passar bara för allvarliga sjukdomar","Man behöver inte söka hjälp om man har bra vänner"], correct: 1 }
+    ]
+  },
+  {
+    id: "27-28-hitta-hem", dates: "26/04/27-28", theme: "Hitta hem S2E9 – Oväntat besök",
+    questions: [
+      { q: "Vilka ska Martina träffa?", options: ["mammagruppen","gamla klasskamrater","Jamals mamma"], correct: 0 },
+      { q: "Vem ringer på dörren hos Jamal och Martina?", options: ["Martina","Hassan","Shilan"], correct: 2 },
+      { q: "Varför blir Jamal överraskad när hans mamma kommer?", options: ["Hon kommer en vecka för tidigt","Hon skulle inte komma alls","Hon kommer en månad för tidigt"], correct: 0 },
+      { q: "Varför blir promenaden inte som Martina tänkt?", options: ["De andra mammorna tränar medan de träffas","De andra mammorna har med sig matsäck","De andra mammorna pratar inte med Martina"], correct: 0 },
+      { q: "Vad smakar Shilan hemma hos Martina och Jamal?", options: ["sill","köttbullar","pannkaka"], correct: 0 },
+      { q: "Hur slutar promenaden för Martina?", options: ["Hon springer ifrån de andra mammorna","Hon börjar bråka med de andra mammorna","Hon ger upp och går hem"], correct: 2 },
+      { q: "Varför har Martina och Jamal sill i kylen?", options: ["De tycker att sill är gott","De ska ta med sillen på midsommar","Sillen är till Axel"], correct: 1 },
+      { q: "Varför berättade inte Jamal om sin mammas besök?", options: ["Han trodde att Martina skulle vägra att släppa in Shilan","Han visste inte vad han skulle säga","Han trodde att Martina skulle bli arg"], correct: 2 },
+      { q: "Varför är Martina irriterad?", options: ["För att Jamal inte törs säga som det är","För att Shilan är på besök","För att promenaden blev misslyckad"], correct: 0 },
+      { q: "Vill Shilan följa med på midsommar?", options: ["Nej, hon vill stanna hemma","Ja, om hon slipper äta sill","Ja, om hon får sjunga Små grodorna"], correct: 1 }
+    ]
+  },
+  {
+    id: "29-30-hitta-hem", dates: "26/04/29-30", theme: "Hitta hem S2E10 – \"Glad\" midsommar",
+    questions: [
+      { q: "Vad ska Martina, Jamal och Shilan göra?", options: ["Åka på semester","Gå på museum","Fira midsommar"], correct: 2 },
+      { q: "Vad gör Hassan i kolonistugan?", options: ["Skriver ett brev till Ylva","Firar midsommar med grannen","Lagar middag till Ylva"], correct: 0 },
+      { q: "Var har Konrad sin stuga?", options: ["På Värmdö","På Djurgården","I Dalarna"], correct: 0 },
+      { q: "Jamal blir besviken. Varför?", options: ["Konrad har ingen sill","Konrad har ingen midsommarstång","Konrad har ingen snaps"], correct: 1 },
+      { q: "Vad är \"en rackare\"?", options: ["En bit bröd","En tugga sill","Ett glas med snaps"], correct: 2 },
+      { q: "Vad gör de efter middagen?", options: ["Dricker kaffe","Spelar kubb","Sjunger allsång"], correct: 1 },
+      { q: "Martina får ett SMS. Från vem?", options: ["Ylva","Hassan","Lena"], correct: 0 },
+      { q: "Martina blir arg. Vad gör hon?", options: ["Hon går på en promenad","Hon kastar en pinne på Konrad","Hon stänger in sig i stugan"], correct: 1 },
+      { q: "Vem träffar Hassan på Sergels torg?", options: ["En kompis","Ylva","En polis"], correct: 0 },
+      { q: "Shilan får köra bilen hem. Varför?", options: ["Shilan vill öva sig på att köra bil i Sverige","De andra är för trötta","De andra har druckit alkohol"], correct: 2 }
+    ]
+  },
+  {
+    id: "04-05-hitta-hem", dates: "26/05/4-5", theme: "Hitta hem S2E11 – Saknad",
+    questions: [
+      { q: "Vad gör Shilan när Ylva ringer?", options: ["Hon är ute och går","Hon är på bio med Martina","Hon leker med Axel"], correct: 2 },
+      { q: "Varför ringer Ylva till Jamal?", options: ["De ska äta middag","De ska leta efter Hassan","De ska åka till Migrationsverket"], correct: 1 },
+      { q: "Martina blir arg. Varför?", options: ["Hon tycker att Jamal kan ta hand om Axel","Hon tycker att hon letar bättre än Jamal","Hon vill inte vara ensam med Shilan"], correct: 0 },
+      { q: "Shilan vill lösa bråket. Hur?", options: ["Hon kan ta hand om Axel","Hon kan hjälpa till att leta","Hon kan laga middag"], correct: 0 },
+      { q: "Vad handlar Ylvas lektion om?", options: ["substantiv","prepositioner","verb"], correct: 1 },
+      { q: "Vilka hjälper till att leta efter klassen?", options: ["Ylvas familj","Ylvas kollega","Ylvas elever"], correct: 2 },
+      { q: "Vad gör killarna på Kulturhuset?", options: ["Dricker kaffe","Läser tidningar","Spelar schack"], correct: 2 },
+      { q: "Vad lagar Shilan?", options: ["En gryta med kyckling och tomat","En gryta med lamm och paprika","Sill och potatis"], correct: 0 },
+      { q: "Var letar Jamal efter Hassan?", options: ["Vid kolonilotten","Under bron","På Kulturhuset"], correct: 1 },
+      { q: "Hassan är på väg att få ett nytt jobb. Hur känner han?", options: ["Han är ivrig","Han är glad","Han verkar orolig"], correct: 2 }
+    ]
+  },
+  {
+    id: "06-07-hitta-hem", dates: "26/05/6-7", theme: "Hitta hem S2E12 – Spanien kallar",
+    questions: [
+      { q: "Var är Martina och Shilan?", options: ["Inne i Stockholm","På Skansen","Hos Konrad"], correct: 0 },
+      { q: "Varför blir Jimmy arg på Hassan?", options: ["Han har varit sjuk","Han kommer för sent","Han kan inte måla"], correct: 1 },
+      { q: "Vad får Hassan göra?", options: ["Han får måla","Dela ut paket","Bygga hus"], correct: 1 },
+      { q: "Vad gör Martina och Shilan?", options: ["Åker buss","Åker spårvagn","Åker båt"], correct: 1 },
+      { q: "Vad vill Shilan göra?", options: ["fiska","bada","dyka"], correct: 0 },
+      { q: "Vad säger Ylvas kollega?", options: ["Att Hassan ligger på sjukhus","Att Hassan lämnat Sverige","Att Hassan gömmer sig för Ylva"], correct: 1 },
+      { q: "Martina betalar fikat. Vad säger hon att hon gör?", options: ["bettar","blippar","pantar"], correct: 1 },
+      { q: "Hur beskriver Martina Jamal?", options: ["Han är envis","Han är arg","Han är sur"], correct: 0 },
+      { q: "Martina får ett mail. Vad står det?", options: ["Hon har fått ett jobb i Göteborg","Hon har fått föräldrapenning","Hon har fått ett jobb i Barcelona"], correct: 2 },
+      { q: "Vad säger Jamal om Martinas mail?", options: ['"Perfekt!"','"Vad synd!"','"Kan mamma flytta med?"'], correct: 1 }
+    ]
+  },
+  {
+    id: "11-12-hitta-hem", dates: "26/05/11-12", theme: "Hitta hem S2E13 – Hassans beslut",
+    questions: [
+      { q: "Varför vill Hassan inte träffa Yasmin?", options: ["Han är sjuk och vill inte smitta Yasmin","Han tycker inte om Yasmin","Han vill inte dra in Yasmin i något dåligt"], correct: 2 },
+      { q: "Varför är Konrad bekymrad?", options: ["Hassan träffar Jimmy Dahlgren","Han har för mycket att göra","Abbas stör honom"], correct: 0 },
+      { q: "Hur får Konrad veta var Hassan är?", options: ["Jimmy Dahlgren berättar det för Konrad","Abbas berättar det för Konrad","Hassan berättar det för Konrad"], correct: 1 },
+      { q: "Var är Yasmin när Hassan ringer?", options: ["På SFI","På Migrationsverket","Hos Jimmy Dahlgren"], correct: 0 },
+      { q: "Vad vill Ylvas kollega egentligen?", options: ["Ta hand om Ylvas lektion","Klaga på Ylva","Hjälpa till"], correct: 1 },
+      { q: "Varför lämnar Hassan tillbaka paketet till Jimmy?", options: ["Han vill inte göra något olagligt","Han hann inte lämna paketet","Han hittade inte till adressen"], correct: 0 },
+      { q: "Vem hjälper Hassan ut från Jimmys ställe?", options: ["Ylva","Konrad","Yasmin"], correct: 1 },
+      { q: "Vad får Hassan av Konrad?", options: ["Ett pass","Karatepinnar","Sin lön"], correct: 1 },
+      { q: "Konrad skjutsar Hassan. Vart?", options: ["Till Ylvas kolonistuga","Till SFI","Till Jamal och Martina"], correct: 0 },
+      { q: "Vad säger Shilan till Jamal?", options: ["Att Jamal måste komma hem och hälsa på Shilan","Att Jamal måste lyssna på Martina","Att Jamal inte ska skjutsa henne till flyget"], correct: 1 }
+    ]
+  },
+  {
+    id: "13-14-hitta-hem", dates: "26/05/13-14", theme: "Hitta hem S2E14 – Picknick",
+    questions: [
+      { q: "Vart ringer Martina?", options: ["Till Jamal","Till Försäkringskassan","Till Migrationsverket"], correct: 1 },
+      { q: "Varför får hon ingen hjälp när hon ringer?", options: ["Hon bryter för mycket på spanska","Hon pratar för fort","Hon pratar för tyst"], correct: 0 },
+      { q: "Vad betyder det att \"vara en klippa\"?", options: ["Att du är duktig på att klippa","Att du är bra på något","Att du är bra på att klättra"], correct: 1 },
+      { q: "Martina får ett SMS. Vart ska hon?", options: ["Till Fjärilshuset","Till Wasamuséet","Till Hagaparken"], correct: 2 },
+      { q: "Vad gör Hassan och Yasmin?", options: ["De badar","De åker båt","De cyklar"], correct: 0 },
+      { q: "Varifrån kommer Yasmin?", options: ["Eritrea","Etiopien","Egypten"], correct: 0 },
+      { q: "Vad har Jamal gjort?", options: ["Klippt sig","Klätt ut sig","Brutit benet"], correct: 1 },
+      { q: "Varför tittar andra besökare på Jamal?", options: ["Han ser fortfarande ut som Bellman","Han sjunger högt för Martina","Han blir rädd för en fjäril"], correct: 0 },
+      { q: "Varför överraskar Jamal Martina?", options: ["Han ville ha en picknick","Han älskar fjärilar","Han har varit tråkig och tänkt för mycket på sig själv"], correct: 2 },
+      { q: "Hur förklarar Martina hur hon känner?", options: ["Hon sjunger en sång av Bellman","Hon visar skillnaden mellan en puppa och en fjäril","Hon skriver ett brev"], correct: 1 }
+    ]
+  },
+  {
+    id: "29-30-radio", dates: "26/04/29-30", theme: "Radio: Unga och politik på TikTok",
+    questions: [
+      { q: "Hur följer de flesta människor politik i Sverige?", options: ["Via TikTok och sociala medier","Via tv, radio och tidningar","Via poddar och YouTube"], correct: 1 },
+      { q: "Vad tycker Petronella Rahimi om politiskt innehåll på TikTok?", options: ["Att det är bra och informativt för unga","Att det är för skämtsamt och saknar bra nyhetskällor","Att det är det bästa sättet att lära sig om politik"], correct: 1 },
+      { q: "Varför gör politiker lättsammare innehåll på TikTok?", options: ["För att de inte kan göra seriöst innehåll","För att skapa ett emotionellt band med unga väljare","För att TikTok kräver roligt innehåll"], correct: 1 }
+    ]
+  },
+  {
+    id: "04-05-radio", dates: "26/05/4-5", theme: "Radio: Fyra killar räddade en älg",
+    questions: [
+      { q: "Var hände älgräddningen?", options: ["I Vindelälven i Västerbotten","I en sjö i Dalarna","I havet utanför Göteborg"], correct: 0 },
+      { q: "Hur fick killarna upp älgen ur vattnet?", options: ["De simmade ut och bar upp henne","De använde ett rep för att dra upp hennes ben på isen","De ringde räddningstjänsten som kom med en kran"], correct: 1 },
+      { q: "Hur länge vilade älgen på isen innan hon gick iväg?", options: ["En halvtimme","Två timmar","Fyra timmar"], correct: 1 }
+    ]
+  },
+  {
+    id: "06-07-radio", dates: "26/05/6-7", theme: "Radio: Äldre lär sig om AI",
+    questions: [
+      { q: "Varför ordnar studieförbundet utbildningar om AI för äldre?", options: ["För att äldre ska kunna jobba med AI","För att skydda dem mot bedragare som använder AI","För att äldre ska lära sig programmera"], correct: 1 },
+      { q: "Vad hoppas Karin Edler från studieförbundet på?", options: ["Att äldre ska börja använda AI på jobbet","Att äldre inte ska bli rädda för appar och internet på grund av AI","Att äldre ska lära sig göra egna AI-program"], correct: 1 },
+      { q: "Vad säger Irene Westberg om att testa nya saker?", options: ["Att man ska vänta tills AI är säkrare","Att man ska hoppa på tåget och våga testa","Att det är farligt att använda AI om man är äldre"], correct: 1 }
+    ]
+  },
+  {
+    id: "11-12-radio", dates: "26/05/11-12", theme: "Radio: Elever får jobba på skoltid",
+    questions: [
+      { q: "Vilka skolor satsar på att elever får jobba under skoltid?", options: ["Skolor i välbärgade områden","Skolor i utsatta områden","Alla högstadieskolor i Sverige"], correct: 1 },
+      { q: "Vad har hänt med närvaron i skolan för de elever som jobbar?", options: ["Den har blivit lägre","Den är oförändrad","Den har blivit högre"], correct: 2 },
+      { q: "Vad lärde sig Adrina Mehrdadian Fard av att jobba?", options: ["Hur man programmerar kassasystem","Hur man ska vara på en jobbintervju och att prata med nya människor","Hur man söker jobb via internet"], correct: 1 }
+    ]
+  },
+  {
+    id: "13-14-radio", dates: "26/05/13-14", theme: "Radio: Studenter fuskar med AI",
+    questions: [
+      { q: "Vad är nu det vanligaste sättet för studenter att fuska, enligt UKÄ?", options: ["Att kopiera från böcker","Att fuska med hjälp av AI","Att samarbeta otillåtet på tentor"], correct: 1 },
+      { q: "Alicia Ravandoni tycker att det går över gränsen när man...", options: ["Använder AI för att förstå något man läser","Frågar en kompis om hjälp med texten","Använder AI för att skriva sin text"], correct: 2 },
+      { q: "Lovisa Scherp Nilsson jämför sina studier innan och efter AI. Vad säger hon?", options: ["Hon lärde sig lika mycket med och utan AI","Hon lärde sig mer innan AI-verktyg blev vanliga","Hon tycker att AI gör studierna roligare"], correct: 1 }
+    ]
+  },
+  {
+    id: "27-28-radio", dates: "26/04/27-28", theme: "Radio: Kriget i Mellanöstern påverkar Sverige",
+    questions: [
+      { q: "Vad säger regeringen om kriget i Mellanöstern?", options: ["Att det påverkar Sveriges ekonomi mycket","Att det inte påverkar Sverige alls","Att Sverige ska hjälpa till med soldater"], correct: 0 },
+      { q: "Vad kan hända med priserna i Sverige?", options: ["De kan gå ner","De förändras inte","De kan stiga mer – inflationen kan bli högre"], correct: 2 },
+      { q: "Vilka två saker avgör hur mycket svensk ekonomi påverkas?", options: ["Hur långt kriget varar och hur länge transportproblemen fortsätter","Oljepriset och vädret i Sverige","Hur många flyktingar som kommer och hur mycket Sverige exporterar"], correct: 0 }
+    ]
+  }
+];
+
+const SUPABASE_URL = "https://dszfynsqxdgsakfckquo.supabase.co";
+const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRzemZ5bnNxeGRnc2FrZmNrcXVvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzcwNzQ1MDIsImV4cCI6MjA5MjY1MDUwMn0.fC90kH2Y9rqedmwbYB856JqC1-lvYWb1JJry4pGnMqg";
+
+async function saveResult(quizId, quizTheme, score, total, answersArr) {
+  try {
+    await fetch(SUPABASE_URL + '/rest/v1/quiz_results', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + SUPABASE_KEY },
+      body: JSON.stringify({ student_name: userName, quiz_id: quizId, quiz_theme: quizTheme, score: score, total: total, answers: answersArr })
+    });
+  } catch(e) { console.error('Save failed:', e); }
+}
+
+let currentQuiz = null;
+let userName = '';
+let userAnswers = [];
+let submitted = false;
+let phase = 'landing';
+const letters = ['A','B','C','D'];
+const main = document.getElementById('mainContent');
+
+function init() {
+  const hash = window.location.hash.replace('#','');
+  if (!hash) { phase = 'landing'; render(); return; }
+  const quiz = QUIZZES.find(q => q.id === hash);
+  if (!quiz) { phase = 'landing'; render(); return; }
+  currentQuiz = quiz;
+  userAnswers = new Array(quiz.questions.length).fill(null);
+  submitted = false;
+  userName = '';
+  phase = 'quiz';
+  render();
+}
+
+window.addEventListener('hashchange', init);
+
+function render() {
+  if (phase === 'landing') { renderLanding(); return; }
+  if (phase === 'results') { renderResults(); return; }
+  renderQuiz();
+}
+
+function renderLanding() {
+  main.innerHTML = `<div class="landing"><div class="landing-card">
+    <div class="landing-title">SFI Quiz</div>
+    <p class="landing-text">Quiz till Johns SFI-lektioner.<br>Öppna länken från din landningssida för att starta ett quiz.</p>
+  </div></div>`;
+}
+
+function renderQuiz() {
+  const questionsHtml = currentQuiz.questions.map((q, qi) => {
+    const optionsHtml = q.options.map((opt, oi) => {
+      let cls = 'option-item';
+      if (submitted) {
+        cls += ' locked';
+        if (oi === q.correct && userAnswers[qi] === oi) cls = 'option-item locked correct';
+        else if (oi === q.correct) cls += ' show-correct';
+        else if (userAnswers[qi] === oi) cls += ' wrong';
+      } else if (userAnswers[qi] === oi) {
+        cls += ' selected';
+      }
+      const click = submitted ? '' : `onclick="selectAnswer(${qi},${oi})"`;
+      return `<div class="${cls}" ${click}>
+        <div class="option-radio"></div>
+        <span class="option-letter">${letters[oi]})</span>
+        <span class="option-text">${opt}</span>
+      </div>`;
+    }).join('');
+    return `<div class="card question-block-${qi}">
+      <div class="question-num">Fråga ${qi+1}</div>
+      <div class="question-text">${q.q}</div>
+      <div class="options-list">${optionsHtml}</div>
+    </div>`;
+  }).join('');
+
+  const canSubmit = userAnswers.every(a => a !== null) && userName.trim().length >= 2;
+
+  main.innerHTML = `
+    <div class="card quiz-title-card">
+      <div class="quiz-theme">${currentQuiz.theme}</div>
+      <div class="quiz-dates">${currentQuiz.dates}</div>
+      <div class="quiz-desc">Läs texten för lektionen och svara sedan på ${currentQuiz.questions.length} frågor.</div>
+    </div>
+    <div class="card">
+      <label class="name-label" for="nameInput">Ditt namn</label>
+      <input class="name-input" id="nameInput" type="text" placeholder="Skriv ditt namn här..." autocomplete="off" value="${submitted ? userName : ''}" ${submitted ? 'disabled' : ''} oninput="onNameInput(this.value)">
+      <div id="nameError" style="display:none;color:#ff0000;font-size:0.82rem;font-weight:700;margin-top:6px;">Du måste skriva in ditt namn innan du skickar in svaret.</div>
+    </div>
+    ${questionsHtml}
+    ${!submitted
+      ? `<button class="submit-btn" id="submitBtn" onclick="submitAnswers()" ${userAnswers.every(a => a !== null) ? '' : 'disabled'}>Skicka in svar</button>`
+      : ''}`;
+
+
+}
+
+function onNameInput(val) {
+  userName = val.trim();
+  const btn = document.getElementById('submitBtn');
+  if (btn) btn.disabled = !(userAnswers.every(a => a !== null) && userName.length >= 2);
+}
+
+function selectAnswer(qi, oi) {
+  if (submitted) return;
+  const nameInp = document.getElementById('nameInput');
+  if (nameInp) userName = nameInp.value.trim();
+  userAnswers[qi] = oi;
+  // Only update this question's options, no full re-render = no scroll
+  const block = document.querySelector('.question-block-' + qi);
+  if (block) {
+    block.querySelectorAll('.option-item').forEach((el, idx) => {
+      el.className = idx === oi ? 'option-item selected' : 'option-item';
+    });
+  }
+  // Update submit button
+  const btn = document.getElementById('submitBtn');
+  if (btn) btn.disabled = !(userAnswers.every(a => a !== null) && userName.length >= 2);
+}
+
+function submitAnswers() {
+  const inp = document.getElementById('nameInput');
+  if (inp) userName = inp.value.trim();
+  if (userName.length < 2) {
+    if (inp) {
+      inp.style.borderColor = '#ff0000';
+      inp.style.borderWidth = '3px';
+      const err = document.getElementById('nameError');
+      if (err) err.style.display = 'block';
+    }
+    return;
+  }
+  if (userAnswers.some(a => a === null)) return;
+  const score = userAnswers.filter((a,i) => a === currentQuiz.questions[i].correct).length;
+  saveResult(currentQuiz.id, currentQuiz.theme, score, currentQuiz.questions.length, userAnswers);
+  phase = 'results';
+  render();
+  window.scrollTo(0, 0);
+}
+
+function showResults() {}
+
+function renderResults() {
+  const total = currentQuiz.questions.length;
+  const score = userAnswers.filter((a,i) => a === currentQuiz.questions[i].correct).length;
+  const pct = Math.round(score/total*100);
+  const barColor = pct >= 80 ? '#00b050' : pct >= 60 ? '#ffc000' : '#ff0000';
+
+  const reviewHtml = currentQuiz.questions.map((q,i) => {
+    const ua = userAnswers[i];
+    const ok = ua === q.correct;
+    return `<div class="review-item">
+      <div class="review-q">${i+1}. ${q.q}</div>
+      ${ok
+        ? `<div class="review-ok">✓ ${letters[ua]}) ${q.options[ua]}</div>`
+        : `<div class="review-your">✗ Ditt svar: ${ua !== null ? letters[ua]+') '+q.options[ua] : '(inget svar)'}</div>
+           <div class="review-correct">✓ Rätt: ${letters[q.correct]}) ${q.options[q.correct]}</div>`}
+    </div>`;
+  }).join('');
+
+  main.innerHTML = `<div class="card">
+    <div class="results-score">${score}/${total}</div>
+    <div class="results-label">poäng · ${pct}%</div>
+    <div class="results-bar"><div class="results-bar-fill" id="resBar" style="width:0%;background:${barColor}"></div></div>
+    <div style="text-align:center;font-size:0.9rem;font-weight:700;margin-top:8px">${userName}</div>
+    <div style="text-align:center;font-size:0.82rem;color:#444;font-style:italic;margin-top:3px">${currentQuiz.theme}</div>
+    <div class="review-title">Genomgång</div>
+    ${reviewHtml}
+    <button class="restart-btn" onclick="restartQuiz()">Försök igen</button>
+  </div>`;
+  setTimeout(() => { const b = document.getElementById('resBar'); if(b) b.style.width = pct+'%'; }, 100);
+}
+
+function restartQuiz() {
+  userAnswers = new Array(currentQuiz.questions.length).fill(null);
+  submitted = false;
+  userName = '';
+  phase = 'quiz';
+  render();
+  window.scrollTo(0, 0);
+}
+
+init();
+</script>
+</body>
+</html>
+/title>
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body { font-family: Arial, sans-serif; background: #f5f5f5; color: #000; min-height: 100vh; }
@@ -504,5 +1514,510 @@ function restartQuiz() {
 
 init();
 </script>
+</body><!-- SFI Quiz v2 – 2026-04-26 -->
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SFI Quiz – FlxKvGul</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: Arial, sans-serif; background: #f5f5f5; color: #000; min-height: 100vh; }
+
+  .app-header { background: #fff; border-bottom: 2px solid #000; padding: 0; display: flex; align-items: center; }
+  .app-header-inner { max-width: 680px; margin: 0 auto; padding: 20px; text-align: center; width: 100%; }
+  .app-title { font-size: 1.2rem; font-weight: 700; display: inline-block; background: #00FF00; padding: 2px 8px; }
+  .app-subtitle { font-size: 0.8rem; color: #444; margin-top: 6px; }
+
+  .main { max-width: 680px; margin: 0 auto; padding: 24px 16px 80px; }
+
+  /* Each card = white box with black border */
+  .card { background: #fff; border: 2px solid #000; padding: 24px; margin-bottom: 12px; }
+
+  /* Quiz title card */
+  .quiz-title-card .quiz-theme { font-size: 1.3rem; font-weight: 700; display: inline-block; background: #00FF00; padding: 2px 8px; margin-bottom: 8px; }
+  .quiz-title-card .quiz-dates { font-size: 0.82rem; color: #444; font-style: italic; margin-bottom: 12px; }
+  .quiz-title-card .quiz-desc { font-size: 0.9rem; line-height: 1.55; }
+
+  /* Name card */
+  .name-label { font-size: 0.78rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 8px; display: block; }
+  .name-input { width: 100%; padding: 10px 12px; font-size: 0.95rem; font-family: Arial, sans-serif; border: 2px solid #000; outline: none; background: #fff; }
+  .name-input:focus { border-width: 3px; }
+
+  /* Question card */
+  .question-num { font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; display: inline-block; background: #00FF00; padding: 1px 6px; margin-bottom: 10px; }
+  .question-text { font-size: 0.98rem; font-weight: 700; margin-bottom: 16px; line-height: 1.45; }
+
+  .options-list { display: flex; flex-direction: column; gap: 7px; }
+  .option-item { display: flex; align-items: center; gap: 12px; padding: 10px 13px; border: 2px solid #000; cursor: pointer; background: #fff; user-select: none; }
+  .option-item:hover:not(.locked) { background: #f5f5f5; }
+  .option-item.selected { background: #fff2cc; }
+  .option-item.correct { background: #e2efda; border-color: #00b050; border-width: 3px; }
+  .option-item.wrong { background: #ffe0e0; border-color: #ff0000; border-width: 3px; }
+  .option-item.show-correct { background: #e2efda; border-color: #00b050; }
+
+  .option-radio { width: 17px; height: 17px; border-radius: 50%; border: 2px solid #000; flex-shrink: 0; display: flex; align-items: center; justify-content: center; background: #fff; }
+  .option-item.selected .option-radio::after { content: ''; width: 8px; height: 8px; border-radius: 50%; background: #000; display: block; }
+  .option-item.correct .option-radio,
+  .option-item.show-correct .option-radio { border-color: #00b050; background: #00b050; }
+  .option-item.correct .option-radio::after,
+  .option-item.show-correct .option-radio::after { content: '✓'; color: #fff; font-size: 10px; font-weight: bold; }
+  .option-item.wrong .option-radio { border-color: #ff0000; background: #ff0000; }
+  .option-item.wrong .option-radio::after { content: '✗'; color: #fff; font-size: 10px; font-weight: bold; }
+  .option-letter { font-size: 0.76rem; font-weight: 700; color: #444; min-width: 18px; }
+  .option-text { font-size: 0.9rem; line-height: 1.4; }
+
+  /* Submit button */
+  .submit-btn { width: 100%; padding: 14px; background: #fff; color: #000; border: 2px solid #000; font-size: 0.95rem; font-weight: 700; font-family: Arial, sans-serif; cursor: pointer; text-transform: uppercase; letter-spacing: 0.04em; margin-top: 4px; }
+  .submit-btn:hover:not(:disabled) { background: #f0f0f0; }
+  .submit-btn:disabled { color: #aaa; border-color: #aaa; cursor: not-allowed; }
+
+  /* Results */
+  .results-score { font-size: 3rem; font-weight: 700; text-align: center; margin-bottom: 4px; }
+  .results-label { font-size: 0.76rem; color: #444; text-transform: uppercase; letter-spacing: 0.08em; font-weight: 700; text-align: center; margin-bottom: 16px; }
+  .results-bar { background: #e0e0e0; border: 1px solid #000; height: 8px; margin: 0 auto 20px; max-width: 280px; }
+  .results-bar-fill { height: 100%; transition: width 1s ease; }
+  .restart-btn { width: 100%; padding: 12px; background: #fff; color: #000; border: 2px solid #000; font-size: 0.88rem; font-weight: 700; font-family: Arial, sans-serif; cursor: pointer; text-transform: uppercase; letter-spacing: 0.04em; margin-top: 12px; }
+  .restart-btn:hover { background: #f0f0f0; }
+
+  .review-title { font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; display: inline-block; background: #00FF00; padding: 2px 8px; margin-bottom: 12px; margin-top: 16px; }
+  .review-item { padding: 9px 0; border-bottom: 1px solid #e0e0e0; font-size: 0.86rem; }
+  .review-q { font-weight: 700; margin-bottom: 3px; }
+  .review-your { font-size: 0.8rem; color: #ff0000; font-weight: 700; }
+  .review-correct { font-size: 0.8rem; color: #00b050; font-weight: 700; }
+  .review-ok { font-size: 0.8rem; color: #00b050; font-weight: 700; }
+
+  /* Landing */
+  .landing { max-width: 500px; margin: 80px auto; padding: 0 20px; text-align: center; }
+  .landing-card { background: #fff; border: 2px solid #000; padding: 40px 32px; }
+  .landing-title { font-size: 1.3rem; font-weight: 700; display: inline-block; background: #00FF00; padding: 2px 8px; margin-bottom: 16px; }
+  .landing-text { font-size: 0.95rem; line-height: 1.6; }
+
+  @media (max-width: 600px) {
+    .main { padding: 14px 10px 60px; }
+    .card { padding: 16px 14px; }
+    .submit-btn, .restart-btn { font-size: 0.88rem; }
+    .results-score { font-size: 2.4rem; }
+  }
+
+  @media (max-width: 360px) {
+    .app-title { font-size: 1rem; }
+    .app-subtitle { font-size: 0.72rem; }
+    .main { padding: 10px 8px 50px; }
+    .card { padding: 13px 11px; }
+    .question-text { font-size: 0.9rem; }
+    .option-text { font-size: 0.82rem; }
+    .option-item { padding: 8px 10px; gap: 8px; }
+    .results-score { font-size: 2rem; }
+    .name-input { font-size: 0.88rem; padding: 8px 10px; }
+    .submit-btn, .restart-btn { padding: 12px; font-size: 0.82rem; }
+  }
+</style>
+</head>
+<body>
+
+<div class="app-header">
+  <div class="app-header-inner">
+    <div class="app-title">SFI Quiz – FlxKvGul</div>
+    <div class="app-subtitle">Hälsa och sjukvård – Kurs C/D</div>
+  </div>
+</div>
+
+<div class="main" id="mainContent"></div>
+
+<script>
+const QUIZZES = [
+  {
+    id: "27-28-text", dates: "26/04/27-28", theme: "Vanliga symptom",
+    questions: [
+      { q: "Vad säger texten om ont i magen i en vecka?", options: ["Det beror säkert på maten","Det är inte något att oroa sig för","Det är något annat än ont i magen en dag","Det går över av sig självt"], correct: 2 },
+      { q: "Vad gör sjuksköterskan på 1177?", options: ["Skriver ett recept åt patienten","Lyssnar och hjälper en att förstå hur allvarligt det är","Bokar tid på sjukhuset direkt","Skäller på en om man väntat för länge"], correct: 1 },
+      { q: "Vad kan läkaren bestämma efter att ha undersökt en?", options: ["Alltid ett recept och vila","Bara ett blodprov","Ett recept, vila och vatten, eller ett blodprov","Att man ska åka till sjukhuset"], correct: 2 },
+      { q: "Vad menar texten med att kroppen och psyket hänger ihop?", options: ["Att man alltid mår dåligt när man är stressad","Att oro och stress kan ge fysiska symptom som ont i magen","Att man inte ska lyssna på kroppen","Att psykiska problem inte är riktiga sjukdomar"], correct: 1 },
+      { q: "Varför kan det vara svårare att söka hjälp i ett nytt land?", options: ["För att vårdcentralen är stängd för utlänningar","För att man kanske inte kan språket eller vet hur systemet fungerar","För att 1177 bara finns på svenska","För att läkarna inte förstår utländska symptom"], correct: 1 }
+    ]
+  },
+  {
+    id: "29-30-text", dates: "26/04/29-30", theme: "Friskvård och förebyggande hälsa",
+    questions: [
+      { q: "Vad är friskvård enligt texten?", options: ["Att gå till läkaren när man är sjuk","Att äta medicin varje dag","Vanor man har för att kroppen ska må bra","Att träna hårt på gym"], correct: 2 },
+      { q: "Vad säger texten är det viktigaste med träning?", options: ["Att ha bra kondition innan man börjar","Att röra på sig ofta, inte att träna hårt","Att simma eller cykla, inte promenera","Att styrketräna för att musklerna ska växa"], correct: 1 },
+      { q: "Vad händer med immunförsvaret om man sover för lite?", options: ["Det blir starkare av att kroppen jobbar mer","Det påverkas inte av sömn","Det försämras och man blir lättare sjuk","Det beror på vad man äter"], correct: 2 },
+      { q: "Vad kan övervikt leda till enligt texten?", options: ["Dålig kondition och svaga muskler","Högt blodtryck och högt blodsocker","Sömnproblem och trötthet","Beroende av socker och fett"], correct: 1 },
+      { q: "Varför är det svårt att sluta röka?", options: ["Det kostar för mycket pengar att sluta","Rökning är bra för avkopplingen","Rökning är ett beroende","Det finns ingen hjälp att få"], correct: 2 },
+      { q: "Vad säger texten om avkoppling?", options: ["Det är viktigare än sömn och kost","Man behöver avkoppling bara om man jobbar mycket","Stress är dåligt för kroppen och man behöver tid för saker man tycker om","En promenad räknas inte som avkoppling"], correct: 2 },
+      { q: "Varför är det bra att göra regelbundna undersökningar?", options: ["Läkaren kan då bestämma vilken träning man ska göra","Man kan hitta problem tidigt och det är lättare att behandla dem då","Det är ett krav i Sverige för alla vuxna","Det hjälper immunförsvaret att bli starkare"], correct: 1 }
+    ]
+  },
+  {
+    id: "04-05-text", dates: "26/05/4-5", theme: "På akuten",
+    questions: [
+      { q: "Vad gör man först när man kommer till akuten?", options: ["Man väntar på en läkare direkt","Man går till receptionen och får en nummerlapp","Man ringer och bokar en tid","Man går till väntrummet och sätter sig"], correct: 1 },
+      { q: "Vem bestämmer vem som får hjälp först på akuten?", options: ["Den som kom dit först","Receptionen","En sjuksköterska","Läkaren"], correct: 2 },
+      { q: "Vilka symtom kräver snabb hjälp enligt texten?", options: ["Lite hosta och ont i halsen","Svårt att andas och stark smärta","Illamående och yrsel","Feber och trötthet"], correct: 1 },
+      { q: "Vad kan hända efter att läkaren har undersökt en?", options: ["Man måste alltid stanna på sjukhuset","Man får alltid en spruta","Man kan få medicin, dropp eller behöva stanna","Man får alltid ett recept och går hem"], correct: 2 },
+      { q: "Vad säger texten om att boka tid på akuten?", options: ["Man måste boka tid minst en dag innan","Man kan ringa och boka samma dag","Man behöver inte boka tid men kan behöva vänta länge","Man bokar tid via 1177"], correct: 2 },
+      { q: "Varför tar man ibland röntgen på akuten?", options: ["Det är obligatoriskt för alla patienter","För att se om man har en infektion eller allergi","Det är en del av läkarens undersökning för att se vad som är fel","Man tar alltid röntgen innan man får medicin"], correct: 2 }
+    ]
+  },
+  {
+    id: "06-07-text", dates: "26/05/6-7", theme: "Sjukskrivning",
+    questions: [
+      { q: "Vad betyder sjukskrivning enligt texten?", options: ["Att man jobbar hemifrån istället","Att man stannar hemma och vilar tills man blir frisk","Att man tar medicin och fortsätter jobba","Att man ansöker om semester"], correct: 1 },
+      { q: "När behövs ett sjukintyg?", options: ["Redan från första dagen","Efter tre dagar","Om sjukskrivningen är längre än sju dagar","Bara om man är inlagd på sjukhus"], correct: 2 },
+      { q: "Vem betalar sjuklön de första fjorton dagarna?", options: ["Försäkringskassan","Vårdcentralen","Arbetsgivaren","Staten"], correct: 2 },
+      { q: "Vad gör en handläggare på Försäkringskassan?", options: ["Skriver sjukintyg åt läkaren","Undersöker patienten","Gör en bedömning och bestämmer om man får sjukpenning","Betalar ut sjuklön direkt"], correct: 2 },
+      { q: "Vad kan hända om Försäkringskassan avslår ansökan?", options: ["Man måste gå tillbaka till jobbet direkt","Man får ingen ersättning","Arbetsgivaren betalar istället","Man måste flytta till ett annat land"], correct: 1 },
+      { q: "Hur återgår man till jobbet enligt texten?", options: ["Man börjar alltid på heltid direkt","Man väntar tills läkaren säger till","Ibland börjar man på deltid först och sedan heltid","Man bestämmer själv när man vill börja"], correct: 2 }
+    ]
+  },
+  {
+    id: "11-12-text", dates: "26/05/11-12", theme: "Fysioterapi",
+    questions: [
+      { q: "Vad handlar fysioterapi om enligt texten?", options: ["Att operera skadade muskler och leder","Att hjälpa kroppen att röra sig bättre och minska smärta","Att skriva ut medicin för smärta","Att vila kroppen tills den läker av sig själv"], correct: 1 },
+      { q: "Vilka söker ofta fysioterapi enligt texten?", options: ["Bara äldre personer med rörelseproblem","Personer som vill gå ner i vikt","Personer efter en skada eller operation","Bara idrottare med muskelproblem"], correct: 2 },
+      { q: "Vad kan en behandling innehålla?", options: ["Bara massage och avslappning","Träning, stretching, massage och avslappning","Bara styrketräning med skivstång","Operation och medicin"], correct: 1 },
+      { q: "Vad lär man sig hos fysioterapeuten?", options: ["Hur man lagar mat på ett hälsosamt sätt","Hur man sover bättre på natten","Hur man står, sitter och lyfter på rätt sätt","Hur man använder träningsmaskiner på gym"], correct: 2 },
+      { q: "Varför är hållning och andning viktiga?", options: ["Det gör träningen roligare","Det hjälper ryggen och förhindrar att smärtan kommer tillbaka","Det är krav från Försäkringskassan","Det ersätter all annan träning"], correct: 1 },
+      { q: "Vad är syftet med uppföljning?", options: ["Att skriva ett nytt sjukintyg","Att fysioterapeuten följer hur det går och justerar träningsprogrammet","Att patienten kan sluta träna hemma","Att bestämma om man behöver en operation"], correct: 1 }
+    ]
+  },
+  {
+    id: "13-14-text", dates: "26/05/13-14", theme: "Psykoterapi",
+    questions: [
+      { q: "Vad är målet med psykoterapi enligt texten?", options: ["Att få medicin för ångest och depression","Att må bättre och förstå sig själv bättre","Att sluta träffa vänner och familj","Att lösa ekonomiska problem"], correct: 1 },
+      { q: "Vad är KBT?", options: ["En typ av gruppterapi för familjer","En metod som hjälper en att ändra negativa tankemönster och beteenden","Ett läkemedel mot ångest","En avslappningsmetod som används inom mindfulness"], correct: 1 },
+      { q: "Vad är en fördel med gruppterapi enligt texten?", options: ["Det är billigare än samtalsterapi","Man slipper prata om sina känslor","Man kan höra att man inte är ensam om sina problem","Man träffar terapeuten mer sällan"], correct: 2 },
+      { q: "Vad betyder tystnadsplikt?", options: ["Att man inte får prata under sessionerna","Att det man pratar om stannar hos terapeuten","Att terapeuten inte får föra journal","Att man måste betala extra för varje besök"], correct: 1 },
+      { q: "Hur får man tillgång till psykoterapi i Sverige?", options: ["Man bokar direkt hos en privat terapeut","Man ansöker via Försäkringskassan","Man kan få remiss via vårdcentralen","Man måste vänta på ett beslut från sjukhuset"], correct: 2 },
+      { q: "Vad säger texten om att söka hjälp?", options: ["Man ska vänta och se om det går över av sig självt","Det är viktigt att våga söka hjälp – många väntar för länge","Psykoterapi passar bara för allvarliga sjukdomar","Man behöver inte söka hjälp om man har bra vänner"], correct: 1 }
+    ]
+  },
+  {
+    id: "27-28-hitta-hem", dates: "26/04/27-28", theme: "Hitta hem S2E9 – Oväntat besök",
+    questions: [
+      { q: "Vilka ska Martina träffa?", options: ["mammagruppen","gamla klasskamrater","Jamals mamma"], correct: 0 },
+      { q: "Vem ringer på dörren hos Jamal och Martina?", options: ["Martina","Hassan","Shilan"], correct: 2 },
+      { q: "Varför blir Jamal överraskad när hans mamma kommer?", options: ["Hon kommer en vecka för tidigt","Hon skulle inte komma alls","Hon kommer en månad för tidigt"], correct: 0 },
+      { q: "Varför blir promenaden inte som Martina tänkt?", options: ["De andra mammorna tränar medan de träffas","De andra mammorna har med sig matsäck","De andra mammorna pratar inte med Martina"], correct: 0 },
+      { q: "Vad smakar Shilan hemma hos Martina och Jamal?", options: ["sill","köttbullar","pannkaka"], correct: 0 },
+      { q: "Hur slutar promenaden för Martina?", options: ["Hon springer ifrån de andra mammorna","Hon börjar bråka med de andra mammorna","Hon ger upp och går hem"], correct: 2 },
+      { q: "Varför har Martina och Jamal sill i kylen?", options: ["De tycker att sill är gott","De ska ta med sillen på midsommar","Sillen är till Axel"], correct: 1 },
+      { q: "Varför berättade inte Jamal om sin mammas besök?", options: ["Han trodde att Martina skulle vägra att släppa in Shilan","Han visste inte vad han skulle säga","Han trodde att Martina skulle bli arg"], correct: 2 },
+      { q: "Varför är Martina irriterad?", options: ["För att Jamal inte törs säga som det är","För att Shilan är på besök","För att promenaden blev misslyckad"], correct: 0 },
+      { q: "Vill Shilan följa med på midsommar?", options: ["Nej, hon vill stanna hemma","Ja, om hon slipper äta sill","Ja, om hon får sjunga Små grodorna"], correct: 1 }
+    ]
+  },
+  {
+    id: "29-30-hitta-hem", dates: "26/04/29-30", theme: "Hitta hem S2E10 – \"Glad\" midsommar",
+    questions: [
+      { q: "Vad ska Martina, Jamal och Shilan göra?", options: ["Åka på semester","Gå på museum","Fira midsommar"], correct: 2 },
+      { q: "Vad gör Hassan i kolonistugan?", options: ["Skriver ett brev till Ylva","Firar midsommar med grannen","Lagar middag till Ylva"], correct: 0 },
+      { q: "Var har Konrad sin stuga?", options: ["På Värmdö","På Djurgården","I Dalarna"], correct: 0 },
+      { q: "Jamal blir besviken. Varför?", options: ["Konrad har ingen sill","Konrad har ingen midsommarstång","Konrad har ingen snaps"], correct: 1 },
+      { q: "Vad är \"en rackare\"?", options: ["En bit bröd","En tugga sill","Ett glas med snaps"], correct: 2 },
+      { q: "Vad gör de efter middagen?", options: ["Dricker kaffe","Spelar kubb","Sjunger allsång"], correct: 1 },
+      { q: "Martina får ett SMS. Från vem?", options: ["Ylva","Hassan","Lena"], correct: 0 },
+      { q: "Martina blir arg. Vad gör hon?", options: ["Hon går på en promenad","Hon kastar en pinne på Konrad","Hon stänger in sig i stugan"], correct: 1 },
+      { q: "Vem träffar Hassan på Sergels torg?", options: ["En kompis","Ylva","En polis"], correct: 0 },
+      { q: "Shilan får köra bilen hem. Varför?", options: ["Shilan vill öva sig på att köra bil i Sverige","De andra är för trötta","De andra har druckit alkohol"], correct: 2 }
+    ]
+  },
+  {
+    id: "04-05-hitta-hem", dates: "26/05/4-5", theme: "Hitta hem S2E11 – Saknad",
+    questions: [
+      { q: "Vad gör Shilan när Ylva ringer?", options: ["Hon är ute och går","Hon är på bio med Martina","Hon leker med Axel"], correct: 2 },
+      { q: "Varför ringer Ylva till Jamal?", options: ["De ska äta middag","De ska leta efter Hassan","De ska åka till Migrationsverket"], correct: 1 },
+      { q: "Martina blir arg. Varför?", options: ["Hon tycker att Jamal kan ta hand om Axel","Hon tycker att hon letar bättre än Jamal","Hon vill inte vara ensam med Shilan"], correct: 0 },
+      { q: "Shilan vill lösa bråket. Hur?", options: ["Hon kan ta hand om Axel","Hon kan hjälpa till att leta","Hon kan laga middag"], correct: 0 },
+      { q: "Vad handlar Ylvas lektion om?", options: ["substantiv","prepositioner","verb"], correct: 1 },
+      { q: "Vilka hjälper till att leta efter klassen?", options: ["Ylvas familj","Ylvas kollega","Ylvas elever"], correct: 2 },
+      { q: "Vad gör killarna på Kulturhuset?", options: ["Dricker kaffe","Läser tidningar","Spelar schack"], correct: 2 },
+      { q: "Vad lagar Shilan?", options: ["En gryta med kyckling och tomat","En gryta med lamm och paprika","Sill och potatis"], correct: 0 },
+      { q: "Var letar Jamal efter Hassan?", options: ["Vid kolonilotten","Under bron","På Kulturhuset"], correct: 1 },
+      { q: "Hassan är på väg att få ett nytt jobb. Hur känner han?", options: ["Han är ivrig","Han är glad","Han verkar orolig"], correct: 2 }
+    ]
+  },
+  {
+    id: "06-07-hitta-hem", dates: "26/05/6-7", theme: "Hitta hem S2E12 – Spanien kallar",
+    questions: [
+      { q: "Var är Martina och Shilan?", options: ["Inne i Stockholm","På Skansen","Hos Konrad"], correct: 0 },
+      { q: "Varför blir Jimmy arg på Hassan?", options: ["Han har varit sjuk","Han kommer för sent","Han kan inte måla"], correct: 1 },
+      { q: "Vad får Hassan göra?", options: ["Han får måla","Dela ut paket","Bygga hus"], correct: 1 },
+      { q: "Vad gör Martina och Shilan?", options: ["Åker buss","Åker spårvagn","Åker båt"], correct: 1 },
+      { q: "Vad vill Shilan göra?", options: ["fiska","bada","dyka"], correct: 0 },
+      { q: "Vad säger Ylvas kollega?", options: ["Att Hassan ligger på sjukhus","Att Hassan lämnat Sverige","Att Hassan gömmer sig för Ylva"], correct: 1 },
+      { q: "Martina betalar fikat. Vad säger hon att hon gör?", options: ["bettar","blippar","pantar"], correct: 1 },
+      { q: "Hur beskriver Martina Jamal?", options: ["Han är envis","Han är arg","Han är sur"], correct: 0 },
+      { q: "Martina får ett mail. Vad står det?", options: ["Hon har fått ett jobb i Göteborg","Hon har fått föräldrapenning","Hon har fått ett jobb i Barcelona"], correct: 2 },
+      { q: "Vad säger Jamal om Martinas mail?", options: ['"Perfekt!"','"Vad synd!"','"Kan mamma flytta med?"'], correct: 1 }
+    ]
+  },
+  {
+    id: "11-12-hitta-hem", dates: "26/05/11-12", theme: "Hitta hem S2E13 – Hassans beslut",
+    questions: [
+      { q: "Varför vill Hassan inte träffa Yasmin?", options: ["Han är sjuk och vill inte smitta Yasmin","Han tycker inte om Yasmin","Han vill inte dra in Yasmin i något dåligt"], correct: 2 },
+      { q: "Varför är Konrad bekymrad?", options: ["Hassan träffar Jimmy Dahlgren","Han har för mycket att göra","Abbas stör honom"], correct: 0 },
+      { q: "Hur får Konrad veta var Hassan är?", options: ["Jimmy Dahlgren berättar det för Konrad","Abbas berättar det för Konrad","Hassan berättar det för Konrad"], correct: 1 },
+      { q: "Var är Yasmin när Hassan ringer?", options: ["På SFI","På Migrationsverket","Hos Jimmy Dahlgren"], correct: 0 },
+      { q: "Vad vill Ylvas kollega egentligen?", options: ["Ta hand om Ylvas lektion","Klaga på Ylva","Hjälpa till"], correct: 1 },
+      { q: "Varför lämnar Hassan tillbaka paketet till Jimmy?", options: ["Han vill inte göra något olagligt","Han hann inte lämna paketet","Han hittade inte till adressen"], correct: 0 },
+      { q: "Vem hjälper Hassan ut från Jimmys ställe?", options: ["Ylva","Konrad","Yasmin"], correct: 1 },
+      { q: "Vad får Hassan av Konrad?", options: ["Ett pass","Karatepinnar","Sin lön"], correct: 1 },
+      { q: "Konrad skjutsar Hassan. Vart?", options: ["Till Ylvas kolonistuga","Till SFI","Till Jamal och Martina"], correct: 0 },
+      { q: "Vad säger Shilan till Jamal?", options: ["Att Jamal måste komma hem och hälsa på Shilan","Att Jamal måste lyssna på Martina","Att Jamal inte ska skjutsa henne till flyget"], correct: 1 }
+    ]
+  },
+  {
+    id: "13-14-hitta-hem", dates: "26/05/13-14", theme: "Hitta hem S2E14 – Picknick",
+    questions: [
+      { q: "Vart ringer Martina?", options: ["Till Jamal","Till Försäkringskassan","Till Migrationsverket"], correct: 1 },
+      { q: "Varför får hon ingen hjälp när hon ringer?", options: ["Hon bryter för mycket på spanska","Hon pratar för fort","Hon pratar för tyst"], correct: 0 },
+      { q: "Vad betyder det att \"vara en klippa\"?", options: ["Att du är duktig på att klippa","Att du är bra på något","Att du är bra på att klättra"], correct: 1 },
+      { q: "Martina får ett SMS. Vart ska hon?", options: ["Till Fjärilshuset","Till Wasamuséet","Till Hagaparken"], correct: 2 },
+      { q: "Vad gör Hassan och Yasmin?", options: ["De badar","De åker båt","De cyklar"], correct: 0 },
+      { q: "Varifrån kommer Yasmin?", options: ["Eritrea","Etiopien","Egypten"], correct: 0 },
+      { q: "Vad har Jamal gjort?", options: ["Klippt sig","Klätt ut sig","Brutit benet"], correct: 1 },
+      { q: "Varför tittar andra besökare på Jamal?", options: ["Han ser fortfarande ut som Bellman","Han sjunger högt för Martina","Han blir rädd för en fjäril"], correct: 0 },
+      { q: "Varför överraskar Jamal Martina?", options: ["Han ville ha en picknick","Han älskar fjärilar","Han har varit tråkig och tänkt för mycket på sig själv"], correct: 2 },
+      { q: "Hur förklarar Martina hur hon känner?", options: ["Hon sjunger en sång av Bellman","Hon visar skillnaden mellan en puppa och en fjäril","Hon skriver ett brev"], correct: 1 }
+    ]
+  },
+  {
+    id: "29-30-radio", dates: "26/04/29-30", theme: "Radio: Unga och politik på TikTok",
+    questions: [
+      { q: "Hur följer de flesta människor politik i Sverige?", options: ["Via TikTok och sociala medier","Via tv, radio och tidningar","Via poddar och YouTube"], correct: 1 },
+      { q: "Vad tycker Petronella Rahimi om politiskt innehåll på TikTok?", options: ["Att det är bra och informativt för unga","Att det är för skämtsamt och saknar bra nyhetskällor","Att det är det bästa sättet att lära sig om politik"], correct: 1 },
+      { q: "Varför gör politiker lättsammare innehåll på TikTok?", options: ["För att de inte kan göra seriöst innehåll","För att skapa ett emotionellt band med unga väljare","För att TikTok kräver roligt innehåll"], correct: 1 }
+    ]
+  },
+  {
+    id: "04-05-radio", dates: "26/05/4-5", theme: "Radio: Fyra killar räddade en älg",
+    questions: [
+      { q: "Var hände älgräddningen?", options: ["I Vindelälven i Västerbotten","I en sjö i Dalarna","I havet utanför Göteborg"], correct: 0 },
+      { q: "Hur fick killarna upp älgen ur vattnet?", options: ["De simmade ut och bar upp henne","De använde ett rep för att dra upp hennes ben på isen","De ringde räddningstjänsten som kom med en kran"], correct: 1 },
+      { q: "Hur länge vilade älgen på isen innan hon gick iväg?", options: ["En halvtimme","Två timmar","Fyra timmar"], correct: 1 }
+    ]
+  },
+  {
+    id: "06-07-radio", dates: "26/05/6-7", theme: "Radio: Äldre lär sig om AI",
+    questions: [
+      { q: "Varför ordnar studieförbundet utbildningar om AI för äldre?", options: ["För att äldre ska kunna jobba med AI","För att skydda dem mot bedragare som använder AI","För att äldre ska lära sig programmera"], correct: 1 },
+      { q: "Vad hoppas Karin Edler från studieförbundet på?", options: ["Att äldre ska börja använda AI på jobbet","Att äldre inte ska bli rädda för appar och internet på grund av AI","Att äldre ska lära sig göra egna AI-program"], correct: 1 },
+      { q: "Vad säger Irene Westberg om att testa nya saker?", options: ["Att man ska vänta tills AI är säkrare","Att man ska hoppa på tåget och våga testa","Att det är farligt att använda AI om man är äldre"], correct: 1 }
+    ]
+  },
+  {
+    id: "11-12-radio", dates: "26/05/11-12", theme: "Radio: Elever får jobba på skoltid",
+    questions: [
+      { q: "Vilka skolor satsar på att elever får jobba under skoltid?", options: ["Skolor i välbärgade områden","Skolor i utsatta områden","Alla högstadieskolor i Sverige"], correct: 1 },
+      { q: "Vad har hänt med närvaron i skolan för de elever som jobbar?", options: ["Den har blivit lägre","Den är oförändrad","Den har blivit högre"], correct: 2 },
+      { q: "Vad lärde sig Adrina Mehrdadian Fard av att jobba?", options: ["Hur man programmerar kassasystem","Hur man ska vara på en jobbintervju och att prata med nya människor","Hur man söker jobb via internet"], correct: 1 }
+    ]
+  },
+  {
+    id: "13-14-radio", dates: "26/05/13-14", theme: "Radio: Studenter fuskar med AI",
+    questions: [
+      { q: "Vad är nu det vanligaste sättet för studenter att fuska, enligt UKÄ?", options: ["Att kopiera från böcker","Att fuska med hjälp av AI","Att samarbeta otillåtet på tentor"], correct: 1 },
+      { q: "Alicia Ravandoni tycker att det går över gränsen när man...", options: ["Använder AI för att förstå något man läser","Frågar en kompis om hjälp med texten","Använder AI för att skriva sin text"], correct: 2 },
+      { q: "Lovisa Scherp Nilsson jämför sina studier innan och efter AI. Vad säger hon?", options: ["Hon lärde sig lika mycket med och utan AI","Hon lärde sig mer innan AI-verktyg blev vanliga","Hon tycker att AI gör studierna roligare"], correct: 1 }
+    ]
+  },
+  {
+    id: "27-28-radio", dates: "26/04/27-28", theme: "Radio: Kriget i Mellanöstern påverkar Sverige",
+    questions: [
+      { q: "Vad säger regeringen om kriget i Mellanöstern?", options: ["Att det påverkar Sveriges ekonomi mycket","Att det inte påverkar Sverige alls","Att Sverige ska hjälpa till med soldater"], correct: 0 },
+      { q: "Vad kan hända med priserna i Sverige?", options: ["De kan gå ner","De förändras inte","De kan stiga mer – inflationen kan bli högre"], correct: 2 },
+      { q: "Vilka två saker avgör hur mycket svensk ekonomi påverkas?", options: ["Hur långt kriget varar och hur länge transportproblemen fortsätter","Oljepriset och vädret i Sverige","Hur många flyktingar som kommer och hur mycket Sverige exporterar"], correct: 0 }
+    ]
+  }
+];
+
+const SUPABASE_URL = "https://dszfynsqxdgsakfckquo.supabase.co";
+const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRzemZ5bnNxeGRnc2FrZmNrcXVvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzcwNzQ1MDIsImV4cCI6MjA5MjY1MDUwMn0.fC90kH2Y9rqedmwbYB856JqC1-lvYWb1JJry4pGnMqg";
+
+async function saveResult(quizId, quizTheme, score, total, answersArr) {
+  try {
+    await fetch(SUPABASE_URL + '/rest/v1/quiz_results', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + SUPABASE_KEY },
+      body: JSON.stringify({ student_name: userName, quiz_id: quizId, quiz_theme: quizTheme, score: score, total: total, answers: answersArr })
+    });
+  } catch(e) { console.error('Save failed:', e); }
+}
+
+let currentQuiz = null;
+let userName = '';
+let userAnswers = [];
+let submitted = false;
+let phase = 'landing';
+const letters = ['A','B','C','D'];
+const main = document.getElementById('mainContent');
+
+function init() {
+  const hash = window.location.hash.replace('#','');
+  if (!hash) { phase = 'landing'; render(); return; }
+  const quiz = QUIZZES.find(q => q.id === hash);
+  if (!quiz) { phase = 'landing'; render(); return; }
+  currentQuiz = quiz;
+  userAnswers = new Array(quiz.questions.length).fill(null);
+  submitted = false;
+  userName = '';
+  phase = 'quiz';
+  render();
+}
+
+window.addEventListener('hashchange', init);
+
+function render() {
+  if (phase === 'landing') { renderLanding(); return; }
+  if (phase === 'results') { renderResults(); return; }
+  renderQuiz();
+}
+
+function renderLanding() {
+  main.innerHTML = `<div class="landing"><div class="landing-card">
+    <div class="landing-title">SFI Quiz</div>
+    <p class="landing-text">Quiz till Johns SFI-lektioner.<br>Öppna länken från din landningssida för att starta ett quiz.</p>
+  </div></div>`;
+}
+
+function renderQuiz() {
+  const questionsHtml = currentQuiz.questions.map((q, qi) => {
+    const optionsHtml = q.options.map((opt, oi) => {
+      let cls = 'option-item';
+      if (submitted) {
+        cls += ' locked';
+        if (oi === q.correct && userAnswers[qi] === oi) cls = 'option-item locked correct';
+        else if (oi === q.correct) cls += ' show-correct';
+        else if (userAnswers[qi] === oi) cls += ' wrong';
+      } else if (userAnswers[qi] === oi) {
+        cls += ' selected';
+      }
+      const click = submitted ? '' : `onclick="selectAnswer(${qi},${oi})"`;
+      return `<div class="${cls}" ${click}>
+        <div class="option-radio"></div>
+        <span class="option-letter">${letters[oi]})</span>
+        <span class="option-text">${opt}</span>
+      </div>`;
+    }).join('');
+    return `<div class="card question-block-${qi}">
+      <div class="question-num">Fråga ${qi+1}</div>
+      <div class="question-text">${q.q}</div>
+      <div class="options-list">${optionsHtml}</div>
+    </div>`;
+  }).join('');
+
+  const canSubmit = userAnswers.every(a => a !== null) && userName.trim().length >= 2;
+
+  main.innerHTML = `
+    <div class="card quiz-title-card">
+      <div class="quiz-theme">${currentQuiz.theme}</div>
+      <div class="quiz-dates">${currentQuiz.dates}</div>
+      <div class="quiz-desc">Läs texten för lektionen och svara sedan på ${currentQuiz.questions.length} frågor.</div>
+    </div>
+    <div class="card">
+      <label class="name-label" for="nameInput">Ditt namn</label>
+      <input class="name-input" id="nameInput" type="text" placeholder="Skriv ditt namn här..." autocomplete="off" value="${submitted ? userName : ''}" ${submitted ? 'disabled' : ''} oninput="onNameInput(this.value)">
+      <div id="nameError" style="display:none;color:#ff0000;font-size:0.82rem;font-weight:700;margin-top:6px;">Du måste skriva in ditt namn innan du skickar in svaret.</div>
+    </div>
+    ${questionsHtml}
+    ${!submitted
+      ? `<button class="submit-btn" id="submitBtn" onclick="submitAnswers()" ${userAnswers.every(a => a !== null) ? '' : 'disabled'}>Skicka in svar</button>`
+      : ''}`;
+
+
+}
+
+function onNameInput(val) {
+  userName = val.trim();
+  const btn = document.getElementById('submitBtn');
+  if (btn) btn.disabled = !(userAnswers.every(a => a !== null) && userName.length >= 2);
+}
+
+function selectAnswer(qi, oi) {
+  if (submitted) return;
+  const nameInp = document.getElementById('nameInput');
+  if (nameInp) userName = nameInp.value.trim();
+  userAnswers[qi] = oi;
+  // Only update this question's options, no full re-render = no scroll
+  const block = document.querySelector('.question-block-' + qi);
+  if (block) {
+    block.querySelectorAll('.option-item').forEach((el, idx) => {
+      el.className = idx === oi ? 'option-item selected' : 'option-item';
+    });
+  }
+  // Update submit button
+  const btn = document.getElementById('submitBtn');
+  if (btn) btn.disabled = !(userAnswers.every(a => a !== null) && userName.length >= 2);
+}
+
+function submitAnswers() {
+  const inp = document.getElementById('nameInput');
+  if (inp) userName = inp.value.trim();
+  if (userName.length < 2) {
+    if (inp) {
+      inp.style.borderColor = '#ff0000';
+      inp.style.borderWidth = '3px';
+      const err = document.getElementById('nameError');
+      if (err) err.style.display = 'block';
+    }
+    return;
+  }
+  if (userAnswers.some(a => a === null)) return;
+  const score = userAnswers.filter((a,i) => a === currentQuiz.questions[i].correct).length;
+  saveResult(currentQuiz.id, currentQuiz.theme, score, currentQuiz.questions.length, userAnswers);
+  phase = 'results';
+  render();
+  window.scrollTo(0, 0);
+}
+
+function showResults() {}
+
+function renderResults() {
+  const total = currentQuiz.questions.length;
+  const score = userAnswers.filter((a,i) => a === currentQuiz.questions[i].correct).length;
+  const pct = Math.round(score/total*100);
+  const barColor = pct >= 80 ? '#00b050' : pct >= 60 ? '#ffc000' : '#ff0000';
+
+  const reviewHtml = currentQuiz.questions.map((q,i) => {
+    const ua = userAnswers[i];
+    const ok = ua === q.correct;
+    return `<div class="review-item">
+      <div class="review-q">${i+1}. ${q.q}</div>
+      ${ok
+        ? `<div class="review-ok">✓ ${letters[ua]}) ${q.options[ua]}</div>`
+        : `<div class="review-your">✗ Ditt svar: ${ua !== null ? letters[ua]+') '+q.options[ua] : '(inget svar)'}</div>
+           <div class="review-correct">✓ Rätt: ${letters[q.correct]}) ${q.options[q.correct]}</div>`}
+    </div>`;
+  }).join('');
+
+  main.innerHTML = `<div class="card">
+    <div class="results-score">${score}/${total}</div>
+    <div class="results-label">poäng · ${pct}%</div>
+    <div class="results-bar"><div class="results-bar-fill" id="resBar" style="width:0%;background:${barColor}"></div></div>
+    <div style="text-align:center;font-size:0.9rem;font-weight:700;margin-top:8px">${userName}</div>
+    <div style="text-align:center;font-size:0.82rem;color:#444;font-style:italic;margin-top:3px">${currentQuiz.theme}</div>
+    <div class="review-title">Genomgång</div>
+    ${reviewHtml}
+    <button class="restart-btn" onclick="restartQuiz()">Försök igen</button>
+  </div>`;
+  setTimeout(() => { const b = document.getElementById('resBar'); if(b) b.style.width = pct+'%'; }, 100);
+}
+
+function restartQuiz() {
+  userAnswers = new Array(currentQuiz.questions.length).fill(null);
+  submitted = false;
+  userName = '';
+  phase = 'quiz';
+  render();
+  window.scrollTo(0, 0);
+}
+
+init();
+</script>
 </body>
+</html>
+
 </html>
